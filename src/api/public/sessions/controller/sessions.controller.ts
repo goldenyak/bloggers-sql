@@ -27,7 +27,7 @@ export class SessionsController {
 	constructor(
 		private readonly commandBus: CommandBus,
 	) {}
-// --------------------------------------------------- //
+// ---------------------------------------------------- //
 	@HttpCode(200)
 	@Get('devices')
 	async getAllSessions(@Req() req: Request) {
