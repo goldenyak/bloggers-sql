@@ -56,6 +56,7 @@ import { BanUserUseCase } from "./api/public/users/use-cases/ban-user.use-case";
 import {
   DeleteAllSessionForBanUserUseCase
 } from "./api/public/sessions/use-cases/delete-all-session-for-ban-user.use-case";
+import { GetAllUsersUseCase } from "./api/public/users/use-cases/get-all-users-use.case";
 
 const controllers = [SuperAdminController, AuthController, SessionsController, DeleteAllController];
 
@@ -64,6 +65,7 @@ const repositories = [UsersRepository, SessionsRepository];
 const usersUseCases = [
   CreateNewUserUseCase,
   ValidateUserForLoginUseCase,
+  GetAllUsersUseCase,
   GetAllUserInfoByIdUseCase,
   GetAllUserInfoByEmailUseCase,
   GetAllUserInfoByLoginUseCase,
@@ -115,13 +117,25 @@ const authUseCases = [
         secret: configService.get('JWT_SECRET'),
       }),
     }),
+    // TypeOrmModule.forRoot({
+    //   type: 'postgres',
+    //   host: process.env.POSTGRES_HOST || 'localhost',
+    //   port: 5432,
+    //   username: process.env.POSTGRES_USER_NAME || 'egor',
+    //   password: process.env.POSTGRES_PASSWORD || 'Iskanderlbgkjv1',
+    //   database: process.env.POSTGRES_DATABASE || 'bloggers',
+    //   // entities: [__dirname + '/**/*.entity{.ts,.js}'],
+    //   entities: [Users, UserProfile, UserBanInfo, SessionInfo],
+    //   synchronize: true,
+    //   autoLoadEntities: true,
+    // }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.POSTGRES_HOST || 'localhost',
+      host: 'localhost',
       port: 5432,
-      username: process.env.POSTGRES_USER_NAME || 'egor',
-      password: process.env.POSTGRES_PASSWORD || 'Iskanderlbgkjv1',
-      database: process.env.POSTGRES_DATABASE || 'bloggers',
+      username: 'egor',
+      password: 'Iskanderlbgkjv1',
+      database: 'bloggers',
       // entities: [__dirname + '/**/*.entity{.ts,.js}'],
       entities: [Users, UserProfile, UserBanInfo, SessionInfo],
       synchronize: true,

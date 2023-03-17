@@ -14,6 +14,6 @@ export class SessionInfo {
   @Column()
   lastActiveDate: string;
 
-  @Column()
+  @Column('uuid')
   userId: string;
 }

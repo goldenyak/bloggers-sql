@@ -78,6 +78,22 @@ export class UsersRepository {
     // ----------------------------------------------------------------- //
   }
   // ----------------------------------------------------------------- //
+  async getAllUsers() {
+    // const query = `SELECT *
+    //   FROM "Users"
+    //   LEFT JOIN "User_profile" ON "User_profile"."userId" = "Users"."id"
+    //   LEFT JOIN "User_ban_info" ON "User_ban_info"."userId" = "Users"."id"
+    //   LEFT JOIN "Session_info" ON "Session_info"."userId" = "Users"."id";
+    // `;
+    const query = `SELECT *
+      FROM "Users"
+      LEFT JOIN "User_profile" ON "Users".id = "User_profile"."userId"
+      LEFT JOIN "User_ban_info" ON "Users".id = "User_ban_info"."userId"
+      LEFT JOIN "Session_info" ON "Users".id = "Session_info"."userId";
+    `;
+    return await this.dataSource.query(query);
+  }
+  // ----------------------------------------------------------------- //
   async getAllUserInfoByEmail(email: string) {
     const query = `SELECT *
       FROM "Users"
@@ -252,5 +268,6 @@ export class UsersRepository {
     return await this.dataSource.query(`DELETE FROM public."Users";`);
   }
   // ----------------------------------------------------------------- //
+
 }
 // ----------------------------------------------------------------- //

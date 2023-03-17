@@ -1,11 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, PrimaryColumn } from "typeorm";
 import { UserProfile } from "./user-profile.entity";
 import { UserBanInfo } from "./user-ban-info.entity";
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity({ name: "Users" })
 export class Users{
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id: string;
 
   @Column()
   login: string

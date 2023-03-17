@@ -24,6 +24,8 @@ import { GetAllUserInfoByIdCommand } from '../../public/users/use-cases/get-all-
 import { UnbanUserCommand } from '../../public/users/use-cases/unban-user.use-case';
 import { BanUserCommand } from '../../public/users/use-cases/ban-user.use-case';
 import { DeleteAllSessionForBanUserCommand } from '../../public/sessions/use-cases/delete-all-session-for-ban-user.use-case';
+import { UsersQueryDto } from "../../public/users/dto/users-query.dto";
+import { GetAllUsersCommand } from "../../public/users/use-cases/get-all-users-use.case";
 
 @Controller('sa')
 export class SuperAdminController {
@@ -42,12 +44,12 @@ export class SuperAdminController {
     );
   }
   // -------------------------------------------------------------- //
-  // 	@UseGuards(BasicAuthGuard)
-  // 	@HttpCode(200)
-  // 	@Get('/users')
-  // 	async getAllUsers(@Query() queryParams: UsersQueryDto) {
-  // 		return this.usersService.getAllUsers(queryParams);
-  // 	}
+  	@UseGuards(BasicAuthGuard)
+  	@HttpCode(200)
+  	@Get('/users')
+  	async getAllUsers(@Query() queryParams: UsersQueryDto) {
+  		return this.commandBus.execute(new GetAllUsersCommand())
+  	}
   // -------------------------------------------------------------- //
   @UseGuards(BasicAuthGuard)
   @HttpCode(204)
