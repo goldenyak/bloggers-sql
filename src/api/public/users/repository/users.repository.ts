@@ -15,6 +15,7 @@ export class UsersRepository {
     passwordHash: string,
     email: string,
     confirmationCode: string,
+    createdAt: string
   ) {
     const userQuery = `
       WITH inserted_user AS (
@@ -23,7 +24,7 @@ export class UsersRepository {
         RETURNING id
       )
       INSERT INTO public."User_profile"("userId", "password", "createdAt", "confirmationCode", "recoveryCode", "isConfirmed")
-      VALUES ((SELECT id FROM inserted_user), $3, NOW(), $4, null, false)
+      VALUES ((SELECT id FROM inserted_user), $3, $4, $5, null, false)
       RETURNING (SELECT * FROM inserted_user)
     `;
 
@@ -31,7 +32,9 @@ export class UsersRepository {
       login,
       email,
       passwordHash,
+      createdAt,
       confirmationCode,
+
     ]);
 
     const banQuery = `
