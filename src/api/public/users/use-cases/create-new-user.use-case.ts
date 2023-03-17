@@ -37,7 +37,7 @@ export class CreateNewUserUseCase
         id: newUser.userId,
         login: newUser.login,
         email: newUser.email,
-        createdAt: newUser.createdAt,
+        createdAt: newUser.createdAt.toISOString(),
         banInfo: {
           isBanned: newUser.isBanned,
           banDate: newUser.banDate,
