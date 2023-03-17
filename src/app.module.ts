@@ -48,8 +48,9 @@ import {
   DeleteAllSessionsWithExcludeUseCase
 } from "./api/public/sessions/use-cases/delete-all-sessions-with-exclude.use-case";
 import { DeleteAllController } from "./api/public/delete-all/controller/delete-all.controller";
+import { SuperAdminController } from "./api/super-admin/controller/super-admin.controller";
 
-const controllers = [AuthController, SessionsController, DeleteAllController];
+const controllers = [SuperAdminController, AuthController, SessionsController, DeleteAllController];
 
 const repositories = [UsersRepository, SessionsRepository];
 

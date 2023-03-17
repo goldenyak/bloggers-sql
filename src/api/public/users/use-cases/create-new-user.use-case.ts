@@ -2,6 +2,7 @@ import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../repository/users.repository';
 import { hash } from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
+import { GetAllUserInfoByLoginCommand } from "./get-all-user-info-by-login-use.case";
 
 export class CreateNewUserCommand {
   constructor(
@@ -15,17 +16,34 @@ export class CreateNewUserCommand {
 export class CreateNewUserUseCase
   implements ICommandHandler<CreateNewUserCommand>
 {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly commandBus: CommandBus,
+  ) {}
 
   async execute(command: CreateNewUserCommand) {
     const { login, password, email } = command;
     const passwordHash = await hash(password, 10);
     const confirmationCode = uuidv4();
-    return await this.usersRepository.createUser(
+    const createdUser = await this.usersRepository.createUser(
       login,
       passwordHash,
       email,
       confirmationCode,
     );
+    if (createdUser) {
+      const newUser = await this.commandBus.execute(new GetAllUserInfoByLoginCommand(login))
+      return {
+        id: newUser.id,
+        login: newUser.login,
+        email: newUser.email,
+        createdAt: newUser.createdAt,
+        banInfo: {
+          isBanned: newUser.isBanned,
+          banDate: newUser.banDate,
+          banReason: newUser.banReason,
+        },
+      }
+    }
   }
 }
