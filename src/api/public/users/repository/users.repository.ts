@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Users } from '../../../../entities/user/users.entity';
+import { UpdateBanUserDto } from '../dto/update-ban-user.dto';
 
 @Injectable()
 export class UsersRepository {
@@ -87,6 +88,16 @@ export class UsersRepository {
     return await this.dataSource.query(query, [email]);
   }
   // ----------------------------------------------------------------- //
+  async getAllUserInfoById(id: string) {
+    const query = `SELECT *
+      FROM "Users"
+      JOIN "User_profile" ON "User_profile"."userId" = "Users"."id"
+      JOIN "User_ban_info" ON "User_ban_info"."userId" = "Users"."id"
+      WHERE "Users"."id" = $1;
+    `;
+    return await this.dataSource.query(query, [id]);
+  }
+  // ----------------------------------------------------------------- //
   async getAllUserInfoByLogin(login: string) {
     const query = `SELECT *
       FROM "Users"
@@ -96,6 +107,7 @@ export class UsersRepository {
     `;
     return await this.dataSource.query(query, [login]);
   }
+
   // ----------------------------------------------------------------- //
   // async createUser(
   //   login: string,
@@ -145,6 +157,24 @@ export class UsersRepository {
     );
   }
   // ----------------------------------------------------------------- //
+  async deleteUserById(id: string) {
+    await this.dataSource.query(
+      `DELETE FROM "User_profile" WHERE "userId" = $1`,
+      [id],
+    );
+    await this.dataSource.query(
+      `DELETE FROM "User_ban_info" WHERE "userId" = $1`,
+      [id],
+    );
+    await this.dataSource.query(
+      `DELETE FROM "Session_info" WHERE "userId" = $1`,
+      [id],
+    );
+    await this.dataSource.query(`DELETE FROM "Users" WHERE "id" = $1`, [id]);
+
+    return;
+  }
+  // ----------------------------------------------------------------- //
   async updateConfirmationCode(confirmationCode: string) {
     const query = `
      UPDATE "User_profile" 
@@ -192,6 +222,28 @@ export class UsersRepository {
      WHERE "recoveryCode" = $1
     `;
     return await this.dataSource.query(query, [recoveryCode, passwordHash]);
+  }
+  // ----------------------------------------------------------------- //
+  async banUser(id: string, dto: UpdateBanUserDto) {
+    const query = `
+     UPDATE "User_ban_info" 
+     SET "isBanned" = $2, "banDate" = null, "banReason" = $3
+     WHERE "userId" = $1
+    `;
+    return await this.dataSource.query(query, [
+      id,
+      dto.isBanned,
+      dto.banReason,
+    ]);
+  }
+  // ----------------------------------------------------------------- //
+  async unbanUser(id: string, dto: UpdateBanUserDto) {
+    const query = `
+     UPDATE "User_ban_info" 
+     SET "isBanned" = $2, "banDate" = null, "banReason" = null
+     WHERE "userId" = $1
+    `;
+    return await this.dataSource.query(query, [id, dto.isBanned]);
   }
   // ----------------------------------------------------------------- //
   async deleteAll() {

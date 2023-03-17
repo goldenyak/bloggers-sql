@@ -33,8 +33,9 @@ export class CreateNewUserUseCase
     );
     if (createdUser) {
       const newUser = await this.commandBus.execute(new GetAllUserInfoByLoginCommand(login))
+      console.log(newUser);
       return {
-        id: newUser.id,
+        id: newUser.userId,
         login: newUser.login,
         email: newUser.email,
         createdAt: newUser.createdAt,

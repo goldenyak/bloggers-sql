@@ -49,6 +49,13 @@ import {
 } from "./api/public/sessions/use-cases/delete-all-sessions-with-exclude.use-case";
 import { DeleteAllController } from "./api/public/delete-all/controller/delete-all.controller";
 import { SuperAdminController } from "./api/super-admin/controller/super-admin.controller";
+import { DeleteUserByIdUseCase } from "./api/public/users/use-cases/delete-user-by-id.use-case";
+import { GetAllUserInfoByIdUseCase } from "./api/public/users/use-cases/get-all-user-info-by-id-use.case";
+import { UnbanUserUseCase } from "./api/public/users/use-cases/unban-user.use-case";
+import { BanUserUseCase } from "./api/public/users/use-cases/ban-user.use-case";
+import {
+  DeleteAllSessionForBanUserUseCase
+} from "./api/public/sessions/use-cases/delete-all-session-for-ban-user.use-case";
 
 const controllers = [SuperAdminController, AuthController, SessionsController, DeleteAllController];
 
@@ -57,6 +64,7 @@ const repositories = [UsersRepository, SessionsRepository];
 const usersUseCases = [
   CreateNewUserUseCase,
   ValidateUserForLoginUseCase,
+  GetAllUserInfoByIdUseCase,
   GetAllUserInfoByEmailUseCase,
   GetAllUserInfoByLoginUseCase,
   GetAllUserInfoByRecoveryCodeUseCase,
@@ -66,6 +74,9 @@ const usersUseCases = [
   FindUserByConfirmationCodeUseCase,
   CheckUserByLoginOrEmailUseCase,
   UpdateConfirmationCodeUseCase,
+  DeleteUserByIdUseCase,
+  BanUserUseCase,
+  UnbanUserUseCase,
 ];
 
 const sessionsUseCases = [
@@ -75,6 +86,7 @@ const sessionsUseCases = [
   UpdateSessionAfterRefreshUseCase,
   DeleteSessionUseCase,
   DeleteAllSessionsWithExcludeUseCase,
+  DeleteAllSessionForBanUserUseCase,
 ];
 
 const authUseCases = [

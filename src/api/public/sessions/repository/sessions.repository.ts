@@ -48,6 +48,14 @@ export class SessionsRepository {
     return await this.dataSource.query(query, [deviceId, userId]);
   }
   // --------------------------------------------------- //
+  async deleteAllSessionForBanUser(userId: string) {
+    const query = `
+        DELETE FROM "Session_info"
+        WHERE "userId" = $1
+`;
+    return await this.dataSource.query(query, [userId]);
+  }
+  // --------------------------------------------------- //
   async updateSessionAfterRefresh(deviceId: string, lastActiveDate: string) {
     const query = `
      UPDATE "Session_info" 
@@ -99,4 +107,5 @@ export class SessionsRepository {
     return await this.dataSource.query(`DELETE FROM public."Session_info";`);
   }
   // --------------------------------------------------- //
+
 }
