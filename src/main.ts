@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import { NestExpressApplication } from '@nestjs/platform-express';
 // import { HttpExceptionFilter } from './exeption-filters/exeption.filter';
 import { useContainer } from "class-validator";
+import { HttpExceptionFilter } from "./helpers/exeption.filter";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -26,7 +27,7 @@ async function bootstrap() {
       },
     }),
   );
-  // app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter());
   app.use(cookieParser());
   app.set('trust proxy', 1);
 

@@ -25,9 +25,25 @@ export class CheckUserByLoginOrEmailUseCase
     const checkUserByLogin = await this.commandBus.execute(
       new FindUserByLoginCommand(login),
     );
-    if (checkUserByEmail || checkUserByLogin) {
-      throw new BadRequestException();
+    const existsErrors = [];
+    if (checkUserByLogin) {
+      existsErrors.push({
+        message: 'Такой login уже существует',
+        field: 'login',
+      });
     }
+    if (checkUserByEmail) {
+      existsErrors.push({
+        message: 'Такой email уже существует',
+        field: 'email',
+      });
+    }
+    if (existsErrors.length > 0) {
+      throw new BadRequestException(existsErrors);
+    }
+    // if (checkUserByEmail || checkUserByLogin) {
+    //   throw new BadRequestException();
+    // }
     // return await this.usersRepository.findUserByEmail(email);
   }
 }

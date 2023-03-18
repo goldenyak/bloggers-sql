@@ -242,16 +242,17 @@ export class UsersRepository {
     return await this.dataSource.query(query, [recoveryCode, passwordHash]);
   }
   // ----------------------------------------------------------------- //
-  async banUser(id: string, dto: UpdateBanUserDto) {
+  async banUser(id: string, dto: UpdateBanUserDto, banDate: string) {
     const query = `
      UPDATE "User_ban_info" 
-     SET "isBanned" = $2, "banDate" = null, "banReason" = $3
+     SET "isBanned" = $2, "banDate" = $4, "banReason" = $3
      WHERE "userId" = $1
     `;
     return await this.dataSource.query(query, [
       id,
       dto.isBanned,
       dto.banReason,
+      banDate
     ]);
   }
   // ----------------------------------------------------------------- //
@@ -342,7 +343,6 @@ export class UsersRepository {
       OFFSET $2
   `;
     const dataResult = await this.dataSource.query(dataQuery, [pageSize, (pageNumber - 1) * pageSize]);
-    console.log(dataResult);
 
     const responseObject = {
       pagesCount,
