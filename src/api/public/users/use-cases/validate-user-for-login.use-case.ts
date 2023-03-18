@@ -18,6 +18,7 @@ export class ValidateUserForLoginUseCase implements ICommandHandler<ValidateUser
   async execute(command: ValidateUserForLoginCommand) {
     const { loginOrEmail, password } = command;
     const user = await this.commandBus.execute(new GetAllUserInfoByLoginCommand(loginOrEmail))
+    console.log(user);
     if (!user) {
       throw new UnauthorizedException()
     }

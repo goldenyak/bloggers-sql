@@ -124,7 +124,6 @@ const authUseCases = [
       username: process.env.POSTGRES_USER_NAME || 'egor',
       password: process.env.POSTGRES_PASSWORD || 'Iskanderlbgkjv1',
       database: process.env.POSTGRES_DATABASE || 'bloggers',
-      // entities: [__dirname + '/**/*.entity{.ts,.js}'],
       entities: [Users, UserProfile, UserBanInfo, SessionInfo],
       synchronize: true,
       autoLoadEntities: true,
