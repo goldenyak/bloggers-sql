@@ -26,7 +26,7 @@ export class UsersQueryDto {
 	@Transform(({ value }) => transformSortByFilter(value))
 	@IsOptional()
 	@IsString()
-	public sortBy = 'createdAt';
+	public sortBy;
 
 	@Transform(({ value }) => transformSortDirectionFilter(value))
 	@IsOptional()

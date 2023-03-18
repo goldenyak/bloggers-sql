@@ -15,7 +15,7 @@ export class UsersRepository {
     passwordHash: string,
     email: string,
     confirmationCode: string,
-    createdAt: string
+    createdAt: string,
   ) {
     const userQuery = `
       WITH inserted_user AS (
@@ -34,7 +34,6 @@ export class UsersRepository {
       passwordHash,
       createdAt,
       confirmationCode,
-
     ]);
 
     const banQuery = `
@@ -272,5 +271,98 @@ export class UsersRepository {
   }
   // ----------------------------------------------------------------- //
 
+  // async countAllUsers(
+  //   banStatus: string,
+  //   searchLoginTerm: string,
+  //   searchEmailTerm: string,
+  // ) {
+  //   const query = `
+  //     SELECT COUNT(*)
+  //     FROM "Users"
+  //     WHERE
+  //         (CAST($1 AS text) IS NULL OR "login" LIKE '%' || $1 || '%') AND
+  //         (CAST($2 AS text) IS NULL OR "email" LIKE '%' || $2 || '%')
+  // `;
+  //   const res =  await this.dataSource.query(query, [searchLoginTerm, searchEmailTerm]);
+  //   const count = Number(res[0].count);
+  //   return count
+  // }
+  // ----------------------------------------------------------------- //
+  async countAllUsers(
+    banStatus: string,
+    searchLoginTerm: string,
+    searchEmailTerm: string,
+  ) {
+    const query = `
+      SELECT COUNT(*)
+      FROM "Users"
+      LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
+      LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
+      LEFT JOIN "Session_info" ON "Users"."id" = "Session_info"."userId"
+      WHERE
+          (CAST($1 AS text) IS NULL OR "Users"."login" LIKE '%' || $1 || '%') AND
+          (CAST($2 AS text) IS NULL OR "Users"."email" LIKE '%' || $2 || '%')
+  `;
+      const res =  await this.dataSource.query(query, [searchLoginTerm, searchEmailTerm]);
+      const count = Number(res[0].count);
+      return count
+  }
+  // ----------------------------------------------------------------- //
+  async getUsersWithPagination(
+    banStatus,
+    searchLoginTerm,
+    searchEmailTerm,
+    sortBy = 'createdAt',
+    sortDirection,
+    pageNumber,
+    pageSize = 10,
+  ) {
+    const countQuery = `
+      SELECT COUNT(*)
+      FROM "Users"
+      LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
+      LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
+      LEFT JOIN "Session_info" ON "Users"."id" = "Session_info"."userId"
+      WHERE
+          (CAST($1 AS text) IS NULL OR "Users"."login" LIKE '%' || $1 || '%') AND
+          (CAST($2 AS text) IS NULL OR "Users"."email" LIKE '%' || $2 || '%')
+  `;
+    const countResult = await this.dataSource.query(countQuery, [searchLoginTerm, searchEmailTerm]);
+    const totalCount = parseInt(countResult[0].count, 10);
+    const pagesCount = Math.ceil(totalCount / pageSize);
+
+    const dataQuery = `
+      SELECT "Users"."id", "Users"."login", "Users"."email",
+             "User_ban_info"."isBanned", "User_ban_info"."banDate", "User_ban_info"."banReason", "User_profile"."createdAt"
+      FROM "Users"
+      LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
+      LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
+      ORDER BY "${sortBy}" ${sortDirection}
+      LIMIT $1
+      OFFSET $2
+  `;
+    const dataResult = await this.dataSource.query(dataQuery, [pageSize, (pageNumber - 1) * pageSize]);
+    console.log(dataResult);
+
+    const responseObject = {
+      pagesCount,
+      page: pageNumber,
+      pageSize,
+      totalCount,
+      items: dataResult.map(user => ({
+        id: user.id,
+        login: user.login,
+        email: user.email,
+        createdAt: user.createdAt,
+        banInfo: {
+          isBanned: user.isBanned,
+          banDate: user.banDate,
+          banReason: user.banReason,
+        },
+      })),
+    };
+
+    return responseObject;
+  }
 }
 // ----------------------------------------------------------------- //
