@@ -305,7 +305,7 @@ export class UsersRepository {
     sortBy = 'createdAt',
     sortDirection,
     pageNumber,
-    pageSize = 10,
+    pageSize,
   ) {
     const countQuery = `
       SELECT COUNT(*)

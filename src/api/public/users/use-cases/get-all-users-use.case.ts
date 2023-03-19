@@ -3,13 +3,13 @@ import { UsersRepository } from '../repository/users.repository';
 
 export class GetAllUsersCommand {
   constructor(
-    public banStatus: string,
+    public pageNumber: number,
+    public pageSize: number,
     public searchLoginTerm: string,
     public searchEmailTerm: string,
     public sortBy: string,
-    public sortDirection: string,
-    public pageNumber: number,
-    public pageSize: number,
+    public sortDirection: any,
+    public banStatus: any,
   ) {}
 }
 
