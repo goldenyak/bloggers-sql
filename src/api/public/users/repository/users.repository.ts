@@ -299,13 +299,13 @@ export class UsersRepository {
   }
   // ----------------------------------------------------------------- //
   async getUsersWithPagination(
-    banStatus,
+    pageNumber,
+    pageSize,
     searchLoginTerm,
     searchEmailTerm,
     sortBy,
     sortDirection,
-    pageNumber,
-    pageSize,
+    banStatus,
   ) {
     const countQuery = `
       SELECT COUNT(*)
@@ -341,8 +341,7 @@ export class UsersRepository {
             ELSE "User_ban_info"."isBanned" IN (true, false)
             END
       ORDER BY "${sortBy}" ${sortDirection}
-      LIMIT $3
-      OFFSET $4
+      OFFSET $4 ROWS FETCH NEXT $3 ROWS ONLY
   `;
     const dataResult = await this.dataSource.query(dataQuery, [
       '%' + searchLoginTerm + '%',
@@ -374,26 +373,6 @@ export class UsersRepository {
       totalCount: +countResult[0].count,
       items: mappedUser,
     };
-
-    // const responseObject = {
-    //   pagesCount,
-    //   page: pageNumber,
-    //   pageSize,
-    //   totalCount,
-    //   items: dataResult.map((user) => ({
-    //     id: user.id,
-    //     login: user.login,
-    //     email: user.email,
-    //     createdAt: user.createdAt,
-    //     banInfo: {
-    //       isBanned: user.isBanned,
-    //       banDate: user.banDate,
-    //       banReason: user.banReason,
-    //     },
-    //   })),
-    // };
-    //
-    // return responseObject;
   }
   // ----------------------------------------------------------------- //
   async getUsers(
