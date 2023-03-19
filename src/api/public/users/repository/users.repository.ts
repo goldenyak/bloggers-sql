@@ -313,7 +313,7 @@ export class UsersRepository {
       LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "Session_info" ON "Users"."id" = "Session_info"."userId"
       WHERE
-         "Users"."login" LIKE $1 OR "Users"."email" LIKE $2
+         "Users"."login" ilike $1 OR "Users"."email" ilike $2
             AND 
             CASE
             WHEN '${banStatus}' = 'notBanned' 
@@ -324,8 +324,8 @@ export class UsersRepository {
             END
   `;
     const countResult = await this.dataSource.query(countQuery, ['%' + searchLoginTerm + '%', '%' + searchEmailTerm + '%']);
-    const totalCount = parseInt(countResult[0].count, 10);
-    const pagesCount = Math.ceil(totalCount / pageSize);
+    // const totalCount = parseInt(countResult[0].count, 10);
+    // const pagesCount = Math.ceil(totalCount / pageSize);
 // --------- //
     const dataQuery = `
       SELECT "Users"."id", "Users"."login", "Users"."email",
@@ -334,7 +334,7 @@ export class UsersRepository {
       LEFT JOIN "User_ban_info"  ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
       WHERE
-         "Users"."login" LIKE $1 OR "Users"."email" LIKE $2
+         "Users"."login" ilike $1 OR "Users"."email" ilike $2
             AND 
             CASE
             WHEN '${banStatus}' = 'notBanned' 
@@ -354,25 +354,49 @@ export class UsersRepository {
       (pageNumber - 1) * pageSize,
     ]);
 
-    const responseObject = {
-      pagesCount,
-      page: pageNumber,
-      pageSize,
-      totalCount,
-      items: dataResult.map((user) => ({
-        id: user.id,
-        login: user.login,
-        email: user.email,
-        createdAt: user.createdAt,
+
+    const pages = Math.ceil(countResult[0].count / pageSize);
+
+    const mappedUser = dataResult.map((obj) => {
+      return {
+        id: obj.id,
+        login: obj.login,
+        createdAt: obj.createdAt,
+        email: obj.email,
         banInfo: {
-          isBanned: user.isBanned,
-          banDate: user.banDate,
-          banReason: user.banReason,
+          banDate: obj.banDate,
+          banReason: obj.banReason,
+          isBanned: obj.isBanned,
         },
-      })),
+      };
+    });
+    return {
+      pagesCount: pages,
+      page: pageNumber,
+      pageSize: pageSize,
+      totalCount: +countResult[0].count,
+      items: mappedUser,
     };
 
-    return responseObject;
+    // const responseObject = {
+    //   pagesCount,
+    //   page: pageNumber,
+    //   pageSize,
+    //   totalCount,
+    //   items: dataResult.map((user) => ({
+    //     id: user.id,
+    //     login: user.login,
+    //     email: user.email,
+    //     createdAt: user.createdAt,
+    //     banInfo: {
+    //       isBanned: user.isBanned,
+    //       banDate: user.banDate,
+    //       banReason: user.banReason,
+    //     },
+    //   })),
+    // };
+    //
+    // return responseObject;
   }
   // ----------------------------------------------------------------- //
   async getUsers(
