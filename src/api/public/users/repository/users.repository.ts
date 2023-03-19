@@ -326,7 +326,7 @@ export class UsersRepository {
       LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "Session_info" ON "Users"."id" = "Session_info"."userId"
       WHERE
-          (CAST($1 AS text) IS NULL OR "Users"."login" LIKE '%' || $1 || '%') AND
+          (CAST($1 AS text) IS NULL OR "Users"."login" LIKE '%' || $1 || '%') OR
           (CAST($2 AS text) IS NULL OR "Users"."email" LIKE '%' || $2 || '%')
   `;
     const countResult = await this.dataSource.query(countQuery, [searchLoginTerm, searchEmailTerm]);
@@ -340,7 +340,7 @@ export class UsersRepository {
       LEFT JOIN "User_ban_info"  ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
       WHERE
-         (CAST($1 AS text) IS NULL OR "Users"."login" LIKE '%' || $1 || '%') AND
+         (CAST($1 AS text) IS NULL OR "Users"."login" LIKE '%' || $1 || '%') OR
          (CAST($2 AS text) IS NULL OR "Users"."email" LIKE '%' || $2 || '%')
       ORDER BY "${sortBy}" ${sortDirection}
       LIMIT $3
