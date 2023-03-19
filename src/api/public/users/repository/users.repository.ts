@@ -253,7 +253,7 @@ export class UsersRepository {
       id,
       dto.isBanned,
       dto.banReason,
-      banDate
+      banDate,
     ]);
   }
   // ----------------------------------------------------------------- //
@@ -273,22 +273,6 @@ export class UsersRepository {
   }
   // ----------------------------------------------------------------- //
 
-  // async countAllUsers(
-  //   banStatus: string,
-  //   searchLoginTerm: string,
-  //   searchEmailTerm: string,
-  // ) {
-  //   const query = `
-  //     SELECT COUNT(*)
-  //     FROM "Users"
-  //     WHERE
-  //         (CAST($1 AS text) IS NULL OR "login" LIKE '%' || $1 || '%') AND
-  //         (CAST($2 AS text) IS NULL OR "email" LIKE '%' || $2 || '%')
-  // `;
-  //   const res =  await this.dataSource.query(query, [searchLoginTerm, searchEmailTerm]);
-  //   const count = Number(res[0].count);
-  //   return count
-  // }
   // ----------------------------------------------------------------- //
   async countAllUsers(
     banStatus: string,
@@ -305,9 +289,12 @@ export class UsersRepository {
           (CAST($1 AS text) IS NULL OR "Users"."login" LIKE '%' || $1 || '%') AND
           (CAST($2 AS text) IS NULL OR "Users"."email" LIKE '%' || $2 || '%')
   `;
-      const res =  await this.dataSource.query(query, [searchLoginTerm, searchEmailTerm]);
-      const count = Number(res[0].count);
-      return count
+    const res = await this.dataSource.query(query, [
+      searchLoginTerm,
+      searchEmailTerm,
+    ]);
+    const count = Number(res[0].count);
+    return count;
   }
   // ----------------------------------------------------------------- //
   async getUsersWithPagination(
@@ -326,13 +313,20 @@ export class UsersRepository {
       LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "Session_info" ON "Users"."id" = "Session_info"."userId"
       WHERE
-          (CAST($1 AS text) IS NULL OR "Users"."login" LIKE '%' || $1 || '%') OR
-          (CAST($2 AS text) IS NULL OR "Users"."email" LIKE '%' || $2 || '%')
+         "Users"."login" LIKE $1 OR "Users"."email" LIKE $2
+            AND 
+            CASE
+            WHEN '${banStatus}' = 'notBanned' 
+            THEN "User_ban_info"."isBanned" = false
+            WHEN '${banStatus}' = 'banned' 
+            THEN "User_ban_info"."isBanned" = true
+            ELSE "User_ban_info"."isBanned" IN (true, false)
+            END
   `;
-    const countResult = await this.dataSource.query(countQuery, [searchLoginTerm, searchEmailTerm]);
+    const countResult = await this.dataSource.query(countQuery, ['%' + searchLoginTerm + '%', '%' + searchEmailTerm + '%']);
     const totalCount = parseInt(countResult[0].count, 10);
     const pagesCount = Math.ceil(totalCount / pageSize);
-
+// --------- //
     const dataQuery = `
       SELECT "Users"."id", "Users"."login", "Users"."email",
              "User_ban_info"."isBanned", "User_ban_info"."banDate", "User_ban_info"."banReason", "User_profile"."createdAt"
@@ -340,20 +334,32 @@ export class UsersRepository {
       LEFT JOIN "User_ban_info"  ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
       WHERE
-         (CAST($1 AS text) IS NULL OR "Users"."login" LIKE '%' || $1 || '%') OR
-         (CAST($2 AS text) IS NULL OR "Users"."email" LIKE '%' || $2 || '%')
+         "Users"."login" LIKE $1 OR "Users"."email" LIKE $2
+            AND 
+            CASE
+            WHEN '${banStatus}' = 'notBanned' 
+            THEN "User_ban_info"."isBanned" = false
+            WHEN '${banStatus}' = 'banned' 
+            THEN "User_ban_info"."isBanned" = true
+            ELSE "User_ban_info"."isBanned" IN (true, false)
+            END
       ORDER BY "${sortBy}" ${sortDirection}
       LIMIT $3
       OFFSET $4
   `;
-    const dataResult = await this.dataSource.query(dataQuery, [searchLoginTerm, searchEmailTerm, pageSize, (pageNumber - 1) * pageSize]);
+    const dataResult = await this.dataSource.query(dataQuery, [
+      '%' + searchLoginTerm + '%',
+      '%' + searchEmailTerm + '%',
+      pageSize,
+      (pageNumber - 1) * pageSize,
+    ]);
 
     const responseObject = {
       pagesCount,
       page: pageNumber,
       pageSize,
       totalCount,
-      items: dataResult.map(user => ({
+      items: dataResult.map((user) => ({
         id: user.id,
         login: user.login,
         email: user.email,
@@ -367,6 +373,82 @@ export class UsersRepository {
     };
 
     return responseObject;
+  }
+  // ----------------------------------------------------------------- //
+  async getUsers(
+    page: number,
+    pageSize: number,
+    searchLoginTerm: string,
+    searchEmailTerm: string,
+    sortBy: string,
+    sortDirection: any,
+    banStatus: any,
+  ) {
+    const users = await this.dataSource.query(
+      `
+        SELECT "Users"."id", "Users"."login", "Users"."email",
+             "User_ban_info"."isBanned", "User_ban_info"."banDate", "User_ban_info"."banReason", "User_profile"."createdAt"
+        FROM "Users"
+        LEFT JOIN "User_ban_info"  ON "Users"."id" = "User_ban_info"."userId"
+        LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
+            WHERE ("Users"."login" LIKE $1 OR "Users"."email" LIKE $2) 
+            AND 
+            CASE
+            WHEN '${banStatus}' = 'notBanned' 
+            THEN "User_ban_info"."isBanned" = false
+            WHEN '${banStatus}' = 'banned' 
+            THEN "User_ban_info"."isBanned" = true
+            ELSE "User_ban_info"."isBanned" IN (true, false)
+            END
+    ORDER BY "${sortBy}" ${sortDirection}
+    OFFSET $3 ROWS FETCH NEXT $4 ROWS ONLY
+    `,
+      [
+        '%' + searchLoginTerm + '%',
+        '%' + searchEmailTerm + '%',
+        (page - 1) * pageSize,
+        pageSize,
+      ],
+    );
+    const total = await this.dataSource.query(
+      `
+    SELECT COUNT(*) FROM public."Users"
+    LEFT JOIN public."User_ban_info"
+        ON "Users"."id" = "User_ban_info"."userId"
+    WHERE ("Users"."login" LIKE $1 OR "Users"."email" LIKE $2) 
+    AND 
+    CASE
+        WHEN '${banStatus}' = 'notBanned' 
+            THEN "User_ban_info"."isBanned" = false
+        WHEN '${banStatus}' = 'banned' 
+            THEN "User_ban_info"."isBanned" = true
+    ELSE "User_ban_info"."isBanned" IN (true, false)
+        END
+    `,
+      ['%' + searchLoginTerm + '%', '%' + searchEmailTerm + '%'],
+    );
+    const pages = Math.ceil(total[0].count / pageSize);
+
+    const mappedUser = users.map((obj) => {
+      return {
+        id: obj.id,
+        login: obj.login,
+        createdAt: obj.createdAt,
+        email: obj.email,
+        banInfo: {
+          banDate: obj.banDate,
+          banReason: obj.banReason,
+          isBanned: obj.isBanned,
+        },
+      };
+    });
+    return {
+      pagesCount: pages,
+      page: page,
+      pageSize: pageSize,
+      totalCount: +total[0].count,
+      items: mappedUser,
+    };
   }
 }
 // ----------------------------------------------------------------- //

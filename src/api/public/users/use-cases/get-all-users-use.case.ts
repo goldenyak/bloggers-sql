@@ -27,32 +27,6 @@ export class GetAllUsersUseCase implements ICommandHandler<GetAllUsersCommand> {
       pageNumber,
       pageSize = 10,
     } = command;
-  //   const usersCount = await this.usersRepository.countAllUsers(
-  //     banStatus,
-  //     searchLoginTerm,
-  //     searchEmailTerm,
-  //   );
-  //   const usersArray = await this.usersRepository.getAllUsers();
-  //   const userItems = usersArray.map((user) => {
-  //     return {
-  //       id: user.id,
-  //       login: user.login,
-  //       email: user.email,
-  //       createdAt: user.createdAt,
-  //       banInfo: {
-  //         isBanned: user.isBanned,
-  //         banDate: user.banDate,
-  //         banReason: user.banReason,
-  //       },
-  //     };
-  //   });
-  //   return {
-  //     pagesCount: Math.ceil(usersCount / pageSize),
-  //     page: 2,
-  //     pageSize: 10,
-  //     totalCount: usersCount,
-  //     items: userItems,
-  //   };
     return await this.usersRepository.getUsersWithPagination(
       banStatus,
       searchLoginTerm,
@@ -62,5 +36,14 @@ export class GetAllUsersUseCase implements ICommandHandler<GetAllUsersCommand> {
       pageNumber,
       pageSize,
     )
+    // return await this.usersRepository.getUsers(
+    //   pageNumber,
+    //   pageSize,
+    //   searchLoginTerm,
+    //   searchEmailTerm,
+    //   sortBy,
+    //   sortDirection,
+    //   banStatus,
+    // );
   }
 }
