@@ -244,6 +244,7 @@ export class UsersRepository {
   }
   // ----------------------------------------------------------------- //
   async banUser(id: string, dto: UpdateBanUserDto, banDate: string) {
+    console.log(id);
     const query = `
      UPDATE "User_ban_info" 
      SET "isBanned" = $2, "banDate" = $4, "banReason" = $3
@@ -312,8 +313,7 @@ export class UsersRepository {
       LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
       LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "Session_info" ON "Users"."id" = "Session_info"."userId"
-      WHERE
-         "Users"."login" ilike $1 OR "Users"."email" ilike $2
+      WHERE ("Users"."login" ilike $1 OR "Users"."email" ilike $2)
             AND 
             CASE
             WHEN '${banStatus}' = 'notBanned' 
@@ -324,8 +324,6 @@ export class UsersRepository {
             END
   `;
     const countResult = await this.dataSource.query(countQuery, ['%' + searchLoginTerm + '%', '%' + searchEmailTerm + '%']);
-    // const totalCount = parseInt(countResult[0].count, 10);
-    // const pagesCount = Math.ceil(totalCount / pageSize);
 // --------- //
     const dataQuery = `
       SELECT "Users"."id", "Users"."login", "Users"."email",
@@ -333,8 +331,7 @@ export class UsersRepository {
       FROM "Users"
       LEFT JOIN "User_ban_info"  ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
-      WHERE
-         "Users"."login" ilike $1 OR "Users"."email" ilike $2
+      WHERE ("Users"."login" ilike $1 OR "Users"."email" ilike $2)
             AND 
             CASE
             WHEN '${banStatus}' = 'notBanned' 
