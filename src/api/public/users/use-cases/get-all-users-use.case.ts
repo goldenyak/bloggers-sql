@@ -25,7 +25,7 @@ export class GetAllUsersUseCase implements ICommandHandler<GetAllUsersCommand> {
       sortBy,
       sortDirection,
       pageNumber,
-      pageSize = 10,
+      pageSize,
     } = command;
     return await this.usersRepository.getUsersWithPagination(
       banStatus,

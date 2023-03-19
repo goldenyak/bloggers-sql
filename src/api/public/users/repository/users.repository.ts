@@ -302,7 +302,7 @@ export class UsersRepository {
     banStatus,
     searchLoginTerm,
     searchEmailTerm,
-    sortBy = 'createdAt',
+    sortBy,
     sortDirection,
     pageNumber,
     pageSize,
