@@ -337,13 +337,16 @@ export class UsersRepository {
       SELECT "Users"."id", "Users"."login", "Users"."email",
              "User_ban_info"."isBanned", "User_ban_info"."banDate", "User_ban_info"."banReason", "User_profile"."createdAt"
       FROM "Users"
-      LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
+      LEFT JOIN "User_ban_info"  ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
+      WHERE
+         (CAST($1 AS text) IS NULL OR "Users"."login" LIKE '%' || $1 || '%') AND
+         (CAST($2 AS text) IS NULL OR "Users"."email" LIKE '%' || $2 || '%')
       ORDER BY "${sortBy}" ${sortDirection}
-      LIMIT $1
-      OFFSET $2
+      LIMIT $3
+      OFFSET $4
   `;
-    const dataResult = await this.dataSource.query(dataQuery, [pageSize, (pageNumber - 1) * pageSize]);
+    const dataResult = await this.dataSource.query(dataQuery, [searchLoginTerm, searchEmailTerm, pageSize, (pageNumber - 1) * pageSize]);
 
     const responseObject = {
       pagesCount,
