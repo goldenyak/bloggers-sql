@@ -19,7 +19,7 @@ export class AddNewConfirmationCodeByEmailUseCase
     const { email } = command;
     const newConfirmationCode = uuidv4();
     const user = await this.usersRepository.getAllUserInfoByEmail(email)
-    await this.usersRepository.addNewConfirmationCodeByEmail(user.userId, newConfirmationCode);
+    await this.usersRepository.addNewConfirmationCodeByEmail(user[0].userId, newConfirmationCode);
     return newConfirmationCode;
   }
 }

@@ -206,6 +206,7 @@ export class UsersRepository {
     userId: string,
     newConfirmationCode: string,
   ) {
+    console.log(newConfirmationCode, userId);
     const query = `
      UPDATE "User_profile" 
      SET "confirmationCode" = $2
