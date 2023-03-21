@@ -8,7 +8,7 @@ export class Users{
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({collation: 'C'})
+  @Column()
   login: string
 
   @Column()

@@ -14,7 +14,7 @@ export class Pagination {
         : query.banStatus === 'notBanned'
           ? 'notBanned'
           : [true, false];
-    const sortDirection = query.sortDirection === 'asc' ? 'ASC' : 'DESC';
+    const sortDirection = query.sortDirection === 'asc' ? 'asc' : 'desc';
     return {
       pageNumber,
       pageSize,

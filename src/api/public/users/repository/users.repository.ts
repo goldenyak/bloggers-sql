@@ -308,6 +308,7 @@ export class UsersRepository {
     sortDirection,
     banStatus,
   ) {
+    console.log('sortBy', sortBy);
     const countQuery = `
       SELECT COUNT(*)
       FROM public."Users"
