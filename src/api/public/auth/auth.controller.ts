@@ -39,6 +39,7 @@ import { SetNewPasswordCommand } from "./use-cases/set-new-password.use-case";
 import { JwtAuthGuard } from "../../../guards/jwt-auth.guard";
 import { FindUserByIdCommand } from "../users/use-cases/find-user-by-id.use-case";
 import { UndoIsLoginFlagCommand } from "../users/use-cases/undo-is-login-flag.use-case";
+import { v4 as uuidv4 } from 'uuid';
 
 @Controller('auth')
 export class AuthController {
@@ -67,7 +68,7 @@ export class AuthController {
   	@Req() req: Request,
   	@Body() dto: LoginUserDto,
   ) {
-  	const userIp = req.ip;
+  	const userIp = uuidv4();
   	const sessionTitle = req.headers['user-agent'];
 
   	const user = await this.commandBus.execute(

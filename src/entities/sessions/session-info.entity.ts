@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from "ty
 
 @Entity({ name: "Session_info" })
 export class SessionInfo {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   ip: string
 
   @Column()

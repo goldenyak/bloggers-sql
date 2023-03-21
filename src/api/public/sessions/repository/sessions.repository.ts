@@ -13,7 +13,7 @@ export class SessionsRepository {
         VALUES ($1, $2, $3, $4, $5)
     `;
     return await this.dataSource.query(query, [
-      (session.ip = '1'),
+      session.ip,
       session.title,
       session.deviceId,
       session.lastActiveDate,
