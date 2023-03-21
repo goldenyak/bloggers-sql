@@ -1,6 +1,7 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { v4 as uuidv4 } from 'uuid';
 import { JwtService } from '@nestjs/jwt';
+import { PutIsLoginFlagCommand } from "../../users/use-cases/put-is-login-flag.use-case";
 
 export class LoginCommand {
 	constructor(public email: string, public id: string, public login: string) {}
@@ -8,14 +9,16 @@ export class LoginCommand {
 
 @CommandHandler(LoginCommand)
 export class LoginUseCase implements ICommandHandler<LoginCommand> {
-	constructor(private readonly jwtService: JwtService) {}
+	constructor(private readonly jwtService: JwtService,
+							private readonly commandBus: CommandBus) {}
 
 	async execute(command: LoginCommand) {
 		const { email, id, login } = command;
 		const deviceId = uuidv4();
 		const payload = { email, id, deviceId, login };
-		const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '10s' });
-		const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '20s' });
+		await this.commandBus.execute(new PutIsLoginFlagCommand(id))
+		const accessToken = await this.jwtService.signAsync(payload, { expiresIn: process.env.ACCESS_TOKEN_EXPIRED_TIME });
+		const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: process.env.REFRESH_TOKEN_EXPIRED_TIME });
 		return {
 			accessToken,
 			refreshToken,

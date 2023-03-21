@@ -57,6 +57,8 @@ import {
   DeleteAllSessionForBanUserUseCase
 } from "./api/public/sessions/use-cases/delete-all-session-for-ban-user.use-case";
 import { GetAllUsersUseCase } from "./api/public/users/use-cases/get-all-users-use.case";
+import { PutIsLoginFlagUseCase } from "./api/public/users/use-cases/put-is-login-flag.use-case";
+import { UndoIsLoginFlagUseCase } from "./api/public/users/use-cases/undo-is-login-flag.use-case";
 
 const controllers = [SuperAdminController, AuthController, SessionsController, DeleteAllController];
 
@@ -93,6 +95,8 @@ const sessionsUseCases = [
 
 const authUseCases = [
   LoginUseCase,
+  PutIsLoginFlagUseCase,
+  UndoIsLoginFlagUseCase,
   SendConfirmEmailUseCase,
   SendNewConfirmEmailUseCase,
   SendRecoveryPasswordEmailUseCase,

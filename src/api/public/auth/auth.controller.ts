@@ -38,6 +38,7 @@ import { GetAllUserInfoByRecoveryCodeCommand } from "../users/use-cases/get-all-
 import { SetNewPasswordCommand } from "./use-cases/set-new-password.use-case";
 import { JwtAuthGuard } from "../../../guards/jwt-auth.guard";
 import { FindUserByIdCommand } from "../users/use-cases/find-user-by-id.use-case";
+import { UndoIsLoginFlagCommand } from "../users/use-cases/undo-is-login-flag.use-case";
 
 @Controller('auth')
 export class AuthController {
@@ -137,6 +138,7 @@ export class AuthController {
   	if (!foundedDevice) {
   		throw new UnauthorizedException();
   	}
+		await this.commandBus.execute(new UndoIsLoginFlagCommand(result.id))
   	res.clearCookie('refreshToken');
   	return this.commandBus.execute(new DeleteSessionCommand(result.deviceId));
   }

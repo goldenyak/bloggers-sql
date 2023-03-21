@@ -14,6 +14,9 @@ export class Users{
   @Column()
   email: string
 
+  @Column({nullable: true})
+  isLogin: boolean
+
   @OneToOne(() => UserProfile, userProfile => userProfile.user)
   userProfile: UserProfile;
 

@@ -20,8 +20,8 @@ export class UsersRepository {
   ) {
     const userQuery = `
       WITH inserted_user AS (
-        INSERT INTO public."Users"("login", "email")
-        VALUES ($1, $2)
+        INSERT INTO public."Users"("login", "email", "isLogin")
+        VALUES ($1, $2, false)
         RETURNING id
       )
       INSERT INTO public."User_profile"("userId", "password", "createdAt", "confirmationCode", "recoveryCode", "isConfirmed")
@@ -268,6 +268,25 @@ export class UsersRepository {
     return await this.dataSource.query(query, [id, dto.isBanned]);
   }
   // ----------------------------------------------------------------- //
+  async putIsLoginFlag(userId: string) {
+    const query = `
+     UPDATE "Users" 
+     SET "isLogin" = true
+     WHERE "id" = $1
+    `;
+    return await this.dataSource.query(query, [userId]);
+  }
+  // ----------------------------------------------------------------- //
+
+  async undoIsLoginFlag(userId: string) {
+    const query = `
+     UPDATE "Users" 
+     SET "isLogin" = false
+     WHERE "id" = $1
+    `;
+    return await this.dataSource.query(query, [userId]);
+  }
+  // ----------------------------------------------------------------- //
   async deleteAll() {
     await this.dataSource.query(`DELETE FROM public."User_ban_info";`);
     await this.dataSource.query(`DELETE FROM public."User_profile";`);
@@ -377,5 +396,6 @@ export class UsersRepository {
     };
   }
   // ----------------------------------------------------------------- //
+
 }
 // ----------------------------------------------------------------- //

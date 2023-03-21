@@ -22,7 +22,7 @@ export class ValidateUserForLoginUseCase implements ICommandHandler<ValidateUser
     if (!user) {
       throw new UnauthorizedException()
     }
-    if (user.isBanned) {
+    if (user.isBanned || user.isLogin) {
       throw new UnauthorizedException()
     }
     const isPasswordCorrect = await compare(password, user.password);
