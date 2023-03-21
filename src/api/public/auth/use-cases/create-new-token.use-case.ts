@@ -13,10 +13,10 @@ export class CreateNewTokenUseCase implements ICommandHandler<CreateNewTokenComm
 
 	async execute(command: CreateNewTokenCommand) {
 		const { email, deviceId, id } = command;
-		const newAccessToken = await this.JwtService.signAsync({ email, id }, { expiresIn: '24h' });
+		const newAccessToken = await this.JwtService.signAsync({ email, id }, { expiresIn: '10s' });
 		const newRefreshToken = await this.JwtService.signAsync(
 			{ email, id, deviceId },
-			{ expiresIn: '24h' },
+			{ expiresIn: '20s' },
 		);
 		return {
 			newAccessToken,
