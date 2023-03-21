@@ -314,7 +314,7 @@ export class UsersRepository {
       LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
       LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "Session_info" ON "Users"."id" = "Session_info"."userId"
-      WHERE ("Users"."login" ilike $1 AND "Users"."email" ilike $2)
+      WHERE ("Users"."login" ilike $1 OR "Users"."email" ilike $2)
             AND 
             CASE
             WHEN '${banStatus}' = 'notBanned' 
@@ -332,7 +332,7 @@ export class UsersRepository {
       FROM public."Users"
       LEFT JOIN "User_ban_info"  ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
-      WHERE ("Users"."login" ilike $1 AND "Users"."email" ilike $2)
+      WHERE ("Users"."login" ilike $1 OR "Users"."email" ilike $2)
           AND
           CASE
           WHEN '${banStatus}' = 'notBanned'
