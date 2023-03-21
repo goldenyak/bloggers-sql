@@ -3,6 +3,7 @@ import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Users } from '../../../../entities/user/users.entity';
 import { UpdateBanUserDto } from '../dto/update-ban-user.dto';
+const { Client } = require('pg');
 
 @Injectable()
 export class UsersRepository {
@@ -309,11 +310,11 @@ export class UsersRepository {
   ) {
     const countQuery = `
       SELECT COUNT(*)
-      FROM "Users"
+      FROM public."Users"
       LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
       LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "Session_info" ON "Users"."id" = "Session_info"."userId"
-      WHERE ("Users"."login" ilike $1 OR "Users"."email" ilike $2)
+      WHERE ("Users"."login" iLIKE $1 AND "Users"."email" iLIKE $2)
             AND 
             CASE
             WHEN '${banStatus}' = 'notBanned' 
@@ -324,32 +325,32 @@ export class UsersRepository {
             END
   `;
     const countResult = await this.dataSource.query(countQuery, ['%' + searchLoginTerm + '%', '%' + searchEmailTerm + '%']);
-// --------- //
+
     const dataQuery = `
       SELECT "Users"."id", "Users"."login", "Users"."email",
              "User_ban_info"."isBanned", "User_ban_info"."banDate", "User_ban_info"."banReason", "User_profile"."createdAt"
-      FROM "Users"
+      FROM public."Users"
       LEFT JOIN "User_ban_info"  ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
-      WHERE ("Users"."login" ilike $1 OR "Users"."email" ilike $2)
-            AND 
-            CASE
-            WHEN '${banStatus}' = 'notBanned' 
-            THEN "User_ban_info"."isBanned" = false
-            WHEN '${banStatus}' = 'banned' 
-            THEN "User_ban_info"."isBanned" = true
-            ELSE "User_ban_info"."isBanned" IN (true, false)
-            END
+      WHERE ("Users"."login" iLIKE $1 AND "Users"."email" iLIKE $2)
+          AND
+          CASE
+          WHEN '${banStatus}' = 'notBanned'
+          THEN "User_ban_info"."isBanned" = false
+          WHEN '${banStatus}' = 'banned'
+          THEN "User_ban_info"."isBanned" = true
+          ELSE "User_ban_info"."isBanned" IN (true, false)
+          END
       ORDER BY "${sortBy}" ${sortDirection}
       OFFSET $4 ROWS FETCH NEXT $3 ROWS ONLY
   `;
+
     const dataResult = await this.dataSource.query(dataQuery, [
       '%' + searchLoginTerm + '%',
       '%' + searchEmailTerm + '%',
       pageSize,
       (pageNumber - 1) * pageSize,
     ]);
-
 
     const pages = Math.ceil(countResult[0].count / pageSize);
 

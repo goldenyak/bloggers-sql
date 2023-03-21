@@ -18,32 +18,14 @@ export class GetAllUsersUseCase implements ICommandHandler<GetAllUsersCommand> {
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async execute(command: GetAllUsersCommand) {
-    const {
-      pageNumber,
-      pageSize,
-      searchLoginTerm,
-      searchEmailTerm,
-      sortBy,
-      sortDirection,
-      banStatus,
-    } = command;
     return await this.usersRepository.getUsersWithPagination(
-      pageNumber,
-      pageSize,
-      searchLoginTerm,
-      searchEmailTerm,
-      sortBy,
-      sortDirection,
-      banStatus,
+      command.pageNumber,
+      command.pageSize,
+      command.searchLoginTerm,
+      command.searchEmailTerm,
+      command.sortBy,
+      command.sortDirection,
+      command.banStatus,
     );
-    // return await this.usersRepository.getUsers(
-    //   pageNumber,
-    //   pageSize,
-    //   searchLoginTerm,
-    //   searchEmailTerm,
-    //   sortBy,
-    //   sortDirection,
-    //   banStatus,
-    // );
   }
 }

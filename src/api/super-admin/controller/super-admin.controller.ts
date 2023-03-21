@@ -48,7 +48,7 @@ export class SuperAdminController {
   @UseGuards(BasicAuthGuard)
   @HttpCode(200)
   @Get('/users')
-  async getAllUsers(@Query() query) {
+  async getAllUsers(@Query() query: any) {
     const {
       pageNumber,
       pageSize,
@@ -58,6 +58,7 @@ export class SuperAdminController {
       sortDirection,
       banStatus,
     } = Pagination.getPaginationDataForUser(query);
+
     return this.commandBus.execute(
       new GetAllUsersCommand(
         pageNumber,
