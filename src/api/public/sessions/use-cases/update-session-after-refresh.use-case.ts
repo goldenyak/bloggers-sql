@@ -3,7 +3,7 @@ import { SessionsRepository } from "../repository/sessions.repository";
 
 
 export class UpdateSessionAfterRefreshCommand {
-	constructor(public deviceId: string, public lastActiveDate: string) {}
+	constructor(public userId: string, public deviceId: string, public lastActiveDate: string, public newExpiredDate: string) {}
 }
 
 @CommandHandler(UpdateSessionAfterRefreshCommand)
@@ -11,7 +11,7 @@ export class UpdateSessionAfterRefreshUseCase implements ICommandHandler<UpdateS
 	constructor(private readonly sessionsRepository: SessionsRepository) {}
 
 	async execute(command: UpdateSessionAfterRefreshCommand) {
-		const { deviceId, lastActiveDate } = command;
-		return await this.sessionsRepository.updateSessionAfterRefresh(deviceId, lastActiveDate)
+		const { userId, deviceId, lastActiveDate, newExpiredDate } = command;
+		return await this.sessionsRepository.updateSessionAfterRefresh(userId, deviceId, lastActiveDate, newExpiredDate)
 	}
 }

@@ -2,7 +2,7 @@ import {
 	BadRequestException,
 	Body,
 	Controller, Get,
-	HttpCode,
+	HttpCode, Ip,
 	Post,
 	Req,
 	Res, UnauthorizedException,
@@ -23,7 +23,7 @@ import { CreateNewSessionCommand } from "../sessions/use-cases/create-new-sessio
 import { CheckRefreshTokenCommand } from "./use-cases/check-refresh-token.use-case";
 import { GetLastActiveSessionCommand } from "./use-cases/get-last-active-session.use-case";
 import { CreateNewTokenCommand } from "./use-cases/create-new-token.use-case";
-import { GetLastActiveDateFromRefreshTokenCommand } from "./use-cases/get-last-active-date-from-refresh-token.use-case";
+import { GetNewPayloadFromRefreshTokenCommand } from "./use-cases/get-last-active-date-from-refresh-token.use-case";
 import { UpdateSessionAfterRefreshCommand } from "../sessions/use-cases/update-session-after-refresh.use-case";
 import { DeleteSessionCommand } from "../sessions/use-cases/delete-session.use-case";
 import { FindUserByCodeDto } from "../users/dto/find-user-by-code.dto";
@@ -40,6 +40,7 @@ import { JwtAuthGuard } from "../../../guards/jwt-auth.guard";
 import { FindUserByIdCommand } from "../users/use-cases/find-user-by-id.use-case";
 import { UndoIsLoginFlagCommand } from "../users/use-cases/undo-is-login-flag.use-case";
 import { v4 as uuidv4 } from 'uuid';
+import { UpdateDevicesCommand } from "../sessions/use-cases/update-devices.use-case";
 
 @Controller('auth')
 export class AuthController {
@@ -67,8 +68,8 @@ export class AuthController {
   	@Res({ passthrough: true }) res: Response,
   	@Req() req: Request,
   	@Body() dto: LoginUserDto,
+		@Ip() ip: string,
   ) {
-  	const userIp = uuidv4();
   	const sessionTitle = req.headers['user-agent'];
 
   	const user = await this.commandBus.execute(
@@ -78,7 +79,7 @@ export class AuthController {
   		new LoginCommand(user.email, user.userId, user.login),
   	);
   	await this.commandBus.execute(
-  		new CreateNewSessionCommand(userIp, user.userId, refreshToken, sessionTitle),
+  		new CreateNewSessionCommand(ip, user.userId, refreshToken, sessionTitle),
   	);
   	res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
   	return {
@@ -94,28 +95,14 @@ export class AuthController {
   	if (!req.cookies || !refreshToken) {
   		throw new UnauthorizedException();
   	}
-  	const result = await this.commandBus.execute(new CheckRefreshTokenCommand(refreshToken));
-  	if (!result) {
-  		throw new UnauthorizedException();
-  	}
-  	const oldLastActiveDate = new Date(result.iat * 1000).toISOString();
-  	const foundedDevice = await this.commandBus.execute(
-  		new GetLastActiveSessionCommand(result.id, result.deviceId, oldLastActiveDate),
-  	);
-  	if (!foundedDevice) {
-  		throw new UnauthorizedException();
-  	}
-  	const { newAccessToken, newRefreshToken } = await this.commandBus.execute(
-  		new CreateNewTokenCommand(result.email, result.id, result.deviceId),
-  	);
-  	const newLastActiveDate = await this.commandBus.execute(
-  		new GetLastActiveDateFromRefreshTokenCommand(newRefreshToken),
-  	);
-  	await this.commandBus.execute(new UpdateSessionAfterRefreshCommand(foundedDevice.deviceId, newLastActiveDate));
-  	res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: true });
+		const tokens = await this.commandBus.execute(new UpdateDevicesCommand(refreshToken))
+		if (!tokens) {
+			throw new UnauthorizedException();
+		}
+  	res.cookie('refreshToken', tokens.newRefreshToken, { httpOnly: true, secure: true });
   	return {
-  		accessToken: newAccessToken,
-  		newRefreshToken,
+  		accessToken: tokens.newAccessToken,
+  		refreshToken: tokens.newRefreshToken,
   	};
   }
 // ----------------------------------------------------------------------- //
@@ -131,7 +118,7 @@ export class AuthController {
   		throw new UnauthorizedException();
   	}
   	const lastActiveDate = await this.commandBus.execute(
-  		new GetLastActiveDateFromRefreshTokenCommand(refreshToken),
+  		new GetNewPayloadFromRefreshTokenCommand(refreshToken),
   	);
   	const foundedDevice = await this.commandBus.execute(
   		new GetLastActiveSessionCommand(result.id, result.deviceId, lastActiveDate),

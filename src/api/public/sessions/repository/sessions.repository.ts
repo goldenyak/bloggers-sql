@@ -7,16 +7,17 @@ import { DataSource } from 'typeorm';
 export class SessionsRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
   // --------------------------------------------------- //
-  async create(session: CreateSessionDto) {
+  async create(session) {
     const query = `
-        INSERT INTO public."Session_info"("ip", "title", "deviceId", "lastActiveDate", "userId")
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO public."Session_info"("ip", "title", "deviceId", "lastActiveDate", "expiredDate", "userId")
+        VALUES ($1, $2, $3, $4, $5, $6)
     `;
     return await this.dataSource.query(query, [
       session.ip,
       session.title,
       session.deviceId,
       session.lastActiveDate,
+      session.expiredDate,
       session.userId,
     ]);
   }
@@ -56,13 +57,13 @@ export class SessionsRepository {
     return await this.dataSource.query(query, [userId]);
   }
   // --------------------------------------------------- //
-  async updateSessionAfterRefresh(deviceId: string, lastActiveDate: string) {
+  async updateSessionAfterRefresh(userId: string, deviceId: string, lastActiveDate: string, newExpiredDate: string) {
     const query = `
      UPDATE "Session_info" 
-     SET "lastActiveDate" = $2 
-     WHERE "deviceId" = $1
+     SET "lastActiveDate" = $2, "expiredDate" = $3 
+     WHERE "deviceId" = $1 AND "userId" = $4
     `;
-    return await this.dataSource.query(query, [deviceId, lastActiveDate]);
+    return await this.dataSource.query(query, [deviceId, lastActiveDate, newExpiredDate, userId]);
   }
   // --------------------------------------------------- //
   // async deleteAllSessionsWithExclude(deviceId: string, userId: string) {

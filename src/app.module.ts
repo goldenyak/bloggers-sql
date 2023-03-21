@@ -59,6 +59,7 @@ import {
 import { GetAllUsersUseCase } from "./api/public/users/use-cases/get-all-users-use.case";
 import { PutIsLoginFlagUseCase } from "./api/public/users/use-cases/put-is-login-flag.use-case";
 import { UndoIsLoginFlagUseCase } from "./api/public/users/use-cases/undo-is-login-flag.use-case";
+import { UpdateDevicesUseCase } from "./api/public/sessions/use-cases/update-devices.use-case";
 
 const controllers = [SuperAdminController, AuthController, SessionsController, DeleteAllController];
 
@@ -88,6 +89,7 @@ const sessionsUseCases = [
   GetSessionByDeviceIdUseCase,
   CreateNewSessionUseCase,
   UpdateSessionAfterRefreshUseCase,
+  UpdateDevicesUseCase,
   DeleteSessionUseCase,
   DeleteAllSessionsWithExcludeUseCase,
   DeleteAllSessionForBanUserUseCase,

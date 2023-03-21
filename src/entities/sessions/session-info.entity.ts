@@ -3,16 +3,19 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from "ty
 @Entity({ name: "Session_info" })
 export class SessionInfo {
   @PrimaryGeneratedColumn('uuid')
-  ip: string
+  deviceId: string
 
   @Column()
   title: string
 
   @Column()
-  deviceId: string;
+  ip: string;
 
   @Column()
   lastActiveDate: string;
+
+  @Column({nullable: true})
+  expiredDate: string;
 
   @Column('uuid')
   userId: string;

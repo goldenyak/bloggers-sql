@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SessionsRepository } from '../repository/sessions.repository';
 import { JwtService } from '@nestjs/jwt';
-import { CreateSessionDto } from "../dto/create-session.dto";
 
 export class CreateNewSessionCommand {
 	constructor(
@@ -26,6 +25,7 @@ export class CreateNewSessionUseCase implements ICommandHandler<CreateNewSession
 			ip: userIp,
 			title: sessionTitle,
 			lastActiveDate: new Date(tokenPayload.iat * 1000).toISOString(),
+			expiredDate: new Date(tokenPayload.exp * 1000).toISOString(),
 			deviceId: tokenPayload.deviceId,
 			userId: userId,
 		};
