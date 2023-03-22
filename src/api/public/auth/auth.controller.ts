@@ -106,7 +106,7 @@ export class AuthController {
 		const tokenPayload = await this.commandBus.execute(new GetNewPayloadFromRefreshTokenCommand(refreshToken))
 		const tokenLastActiveDate = new Date(tokenPayload.iat*1000).toISOString()
 		const currentDevice = await this.commandBus.execute(new GetSessionByDeviceIdCommand(tokenPayload.deviceId))
-		if (currentDevice) {
+		if (!currentDevice) {
 			throw new UnauthorizedException()
 		}
 		if (currentDevice.lastActiveDate !== tokenLastActiveDate) {
