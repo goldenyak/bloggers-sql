@@ -117,11 +117,11 @@ export class AuthController {
   	if (!result) {
   		throw new UnauthorizedException();
   	}
-  	const lastActiveDate = await this.commandBus.execute(
+  	const payload = await this.commandBus.execute(
   		new GetNewPayloadFromRefreshTokenCommand(refreshToken),
   	);
   	const foundedDevice = await this.commandBus.execute(
-  		new GetLastActiveSessionCommand(result.id, result.deviceId, lastActiveDate),
+  		new GetLastActiveSessionCommand(result.id, result.deviceId, payload.iat),
   	);
   	if (!foundedDevice) {
   		throw new UnauthorizedException();

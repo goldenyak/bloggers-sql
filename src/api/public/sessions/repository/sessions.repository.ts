@@ -57,13 +57,13 @@ export class SessionsRepository {
     return await this.dataSource.query(query, [userId]);
   }
   // --------------------------------------------------- //
-  async updateSessionAfterRefresh(userId: string, deviceId: string, lastActiveDate: string, newExpiredDate: string) {
+  async updateSessionAfterRefresh(deviceId: string, lastActiveDate: string, newExpiredDate: string) {
     const query = `
      UPDATE "Session_info" 
      SET "lastActiveDate" = $2, "expiredDate" = $3 
-     WHERE "deviceId" = $1 AND "userId" = $4
+     WHERE "deviceId" = $1
     `;
-    return await this.dataSource.query(query, [deviceId, lastActiveDate, newExpiredDate, userId]);
+    return await this.dataSource.query(query, [deviceId, lastActiveDate, newExpiredDate]);
   }
   // --------------------------------------------------- //
   // async deleteAllSessionsWithExclude(deviceId: string, userId: string) {

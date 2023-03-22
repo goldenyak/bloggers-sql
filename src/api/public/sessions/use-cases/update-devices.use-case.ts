@@ -42,7 +42,6 @@ export class UpdateDevicesUseCase
     const newExpiredDate = new Date(newPayload.exp * 1000).toISOString();
     await this.commandBus.execute(
       new UpdateSessionAfterRefreshCommand(
-        newPayload.userId,
         newPayload.deviceId,
         newLastActiveDate,
         newExpiredDate,
