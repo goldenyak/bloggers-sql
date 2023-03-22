@@ -62,6 +62,9 @@ export class SessionsController {
 	async deleteSessionByDeviceId(@Param('deviceId') deviceId: string, @Req() req: Request) {
 		const refreshToken = req.cookies.refreshToken;
 		const tokenPayload = await this.commandBus.execute(new CheckRefreshTokenCommand(refreshToken))
+		if(!tokenPayload) {
+			throw new UnauthorizedException()
+		}
 		const currentUser = await this.commandBus.execute(new GetAllUserInfoByLoginCommand(tokenPayload.login));
 		const currentSession = await this.commandBus.execute(new GetSessionByDeviceIdCommand(deviceId))
 		if (!refreshToken || !tokenPayload) {
