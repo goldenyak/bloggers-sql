@@ -126,27 +126,26 @@ export class AuthController {
 	@HttpCode(204)
   @Post('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-  	const refreshToken = await req.cookies.refreshToken;
-  	if (!refreshToken) {
-  		throw new UnauthorizedException();
-  	}
-  	const result = await this.commandBus.execute(new CheckRefreshTokenCommand(refreshToken));
-  	if (!result) {
-  		throw new UnauthorizedException();
-  	}
-  	const payload = await this.commandBus.execute(
-  		new GetNewPayloadFromRefreshTokenCommand(refreshToken),
-  	);
-		const lastActiveDate = new Date(payload.iat * 1000).toISOString()
-  	const foundedDevice = await this.commandBus.execute(
-  		new GetLastActiveSessionCommand(payload.id, payload.deviceId, lastActiveDate),
-  	);
-  	if (!foundedDevice) {
-  		throw new UnauthorizedException();
-  	}
-		await this.commandBus.execute(new UndoIsLoginFlagCommand(payload.id))
+		const refreshToken = req.cookies.refreshToken;
+		if (!refreshToken) {
+			throw new UnauthorizedException();
+		}
+		const result = await this.commandBus.execute(new CheckRefreshTokenCommand(refreshToken));
+		if (!result) {
+			throw new UnauthorizedException();
+		}
+		const tokenPayload = await this.commandBus.execute(new GetNewPayloadFromRefreshTokenCommand(refreshToken))
+		const tokenLastActiveDate = new Date(tokenPayload.iat*1000).toISOString()
+		const currentDevice = await this.commandBus.execute(new GetSessionByDeviceIdCommand(tokenPayload.deviceId))
+		if (!currentDevice) {
+			throw new UnauthorizedException()
+		}
+		if (currentDevice.lastActiveDate !== tokenLastActiveDate) {
+			throw new UnauthorizedException()
+		}
+		await this.commandBus.execute(new UndoIsLoginFlagCommand(tokenPayload.id))
   	res.clearCookie('refreshToken');
-  	return this.commandBus.execute(new DeleteSessionCommand(payload.deviceId));
+  	return this.commandBus.execute(new DeleteSessionCommand(tokenPayload.deviceId));
   }
 	// ----------------------------------------------------------------------- //
   @UseGuards(ThrottlerIpGuard)
