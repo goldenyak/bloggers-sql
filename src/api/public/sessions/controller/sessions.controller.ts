@@ -33,11 +33,14 @@ export class SessionsController {
 	@Get('devices')
 	async getAllSessions(@Req() req: Request) {
 		const refreshToken = req.cookies.refreshToken;
-		const tokenPayload = await this.commandBus.execute(new CheckRefreshTokenCommand(refreshToken))
-		if (!refreshToken || !tokenPayload) {
+		if (!refreshToken) {
 			throw new UnauthorizedException();
 		}
-		const currentUser = await this.commandBus.execute(new FindUserByIdCommand(tokenPayload.id));
+ 		const tokenPayload = await this.commandBus.execute(new CheckRefreshTokenCommand(refreshToken))
+		if (!tokenPayload) {
+			throw new UnauthorizedException();
+		}
+		const currentUser = await this.commandBus.execute(new GetAllUserInfoByEmailCommand(tokenPayload.email));
 		if (currentUser) {
 			return await this.commandBus.execute(new GetAllSessionsCommand(tokenPayload.id))
 		}
@@ -47,11 +50,14 @@ export class SessionsController {
 	@Delete('devices')
 	async deleteAllSessions(@Req() req: Request) {
 		const refreshToken = req.cookies.refreshToken;
-		const tokenPayload = await this.commandBus.execute(new CheckRefreshTokenCommand(refreshToken))
-		const currentUser = await this.commandBus.execute(new GetAllUserInfoByEmailCommand(tokenPayload.email));
-		if (!refreshToken || !tokenPayload) {
+		if (!refreshToken) {
 			throw new UnauthorizedException();
 		}
+		const tokenPayload = await this.commandBus.execute(new CheckRefreshTokenCommand(refreshToken))
+		if (!tokenPayload) {
+			throw new UnauthorizedException();
+		}
+		const currentUser = await this.commandBus.execute(new GetAllUserInfoByEmailCommand(tokenPayload.email));
 		const currentSession = await this.commandBus.execute(new GetSessionByDeviceIdCommand(tokenPayload.deviceId))
 		if (currentSession.deviceId === tokenPayload.deviceId) {
 			return await this.commandBus.execute(new DeleteAllSessionsWithExcludeCommand(currentSession.deviceId, currentUser.userId))
@@ -62,8 +68,11 @@ export class SessionsController {
 	@Delete('devices/:deviceId')
 	async deleteSessionByDeviceId(@Param('deviceId') deviceId: string, @Req() req: Request) {
 		const refreshToken = req.cookies.refreshToken;
+		if (!refreshToken) {
+			throw new UnauthorizedException();
+		}
 		const tokenPayload = await this.commandBus.execute(new CheckRefreshTokenCommand(refreshToken))
-		if (!refreshToken || !tokenPayload) {
+		if (!tokenPayload) {
 			throw new UnauthorizedException();
 		}
 		const currentUser = await this.commandBus.execute(new GetAllUserInfoByEmailCommand(tokenPayload.email));
