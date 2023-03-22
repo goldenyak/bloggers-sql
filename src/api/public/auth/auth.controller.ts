@@ -96,18 +96,18 @@ export class AuthController {
   @Post('refresh-token')
   async refreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
   	const refreshToken = req.cookies.refreshToken;
-  	if (!req.cookies || !refreshToken) {
+  	if (!refreshToken) {
   		throw new UnauthorizedException();
   	}
-		const tokenPayload = await this.commandBus.execute(new GetNewPayloadFromRefreshTokenCommand(refreshToken))
-		const tokenLastActiveDate = new Date(tokenPayload.iat*1000).toISOString()
-		const currentDevice = await this.commandBus.execute(new GetSessionByDeviceIdCommand(tokenPayload.deviceId))
-		if (currentDevice) {
-			throw new UnauthorizedException()
-		}
-		if (currentDevice.lastActiveDate !== tokenLastActiveDate) {
-			throw new UnauthorizedException()
-		}
+		// const tokenPayload = await this.commandBus.execute(new GetNewPayloadFromRefreshTokenCommand(refreshToken))
+		// const tokenLastActiveDate = new Date(tokenPayload.iat*1000).toISOString()
+		// const currentDevice = await this.commandBus.execute(new GetSessionByDeviceIdCommand(tokenPayload.deviceId))
+		// if (currentDevice) {
+		// 	throw new UnauthorizedException()
+		// }
+		// if (currentDevice.lastActiveDate !== tokenLastActiveDate) {
+		// 	throw new UnauthorizedException()
+		// }
 		const tokens = await this.commandBus.execute(new UpdateDevicesCommand(refreshToken))
 		if (!tokens) {
 			throw new UnauthorizedException();
