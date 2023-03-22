@@ -48,13 +48,13 @@ export class SessionsController {
 	async deleteAllSessions(@Req() req: Request) {
 		const refreshToken = req.cookies.refreshToken;
 		const tokenPayload = await this.commandBus.execute(new CheckRefreshTokenCommand(refreshToken))
-		const currentUser = await this.commandBus.execute(new GetAllUserInfoByLoginCommand(tokenPayload.login));
+		const currentUser = await this.commandBus.execute(new GetAllUserInfoByEmailCommand(tokenPayload.email));
 		if (!refreshToken || !tokenPayload) {
 			throw new UnauthorizedException();
 		}
 		const currentSession = await this.commandBus.execute(new GetSessionByDeviceIdCommand(tokenPayload.deviceId))
 		if (currentSession.deviceId === tokenPayload.deviceId) {
-			return await this.commandBus.execute(new DeleteAllSessionsWithExcludeCommand(currentSession.deviceId, currentUser.id))
+			return await this.commandBus.execute(new DeleteAllSessionsWithExcludeCommand(currentSession.deviceId, currentUser.userId))
 		}
 	}
 // --------------------------------------------------- //
