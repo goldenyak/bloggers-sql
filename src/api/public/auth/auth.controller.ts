@@ -132,15 +132,16 @@ export class AuthController {
   	const payload = await this.commandBus.execute(
   		new GetNewPayloadFromRefreshTokenCommand(refreshToken),
   	);
+		const lastActiveDate = new Date(payload.iat * 1000).toISOString()
   	const foundedDevice = await this.commandBus.execute(
-  		new GetLastActiveSessionCommand(result.id, result.deviceId, payload.iat),
+  		new GetLastActiveSessionCommand(payload.id, payload.deviceId, lastActiveDate),
   	);
   	if (!foundedDevice) {
   		throw new UnauthorizedException();
   	}
-		await this.commandBus.execute(new UndoIsLoginFlagCommand(result.id))
+		await this.commandBus.execute(new UndoIsLoginFlagCommand(payload.id))
   	res.clearCookie('refreshToken');
-  	return this.commandBus.execute(new DeleteSessionCommand(result.deviceId));
+  	return this.commandBus.execute(new DeleteSessionCommand(payload.deviceId));
   }
 	// ----------------------------------------------------------------------- //
   @UseGuards(ThrottlerIpGuard)
