@@ -41,7 +41,10 @@ import { FindUserByIdCommand } from "../users/use-cases/find-user-by-id.use-case
 import { UndoIsLoginFlagCommand } from "../users/use-cases/undo-is-login-flag.use-case";
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateDevicesCommand } from "../sessions/use-cases/update-devices.use-case";
-import { GetSessionByDeviceIdUseCase } from "./use-cases/get-session-by-device-id.use-case";
+import {
+	GetSessionByDeviceIdCommand,
+	GetSessionByDeviceIdUseCase
+} from "./use-cases/get-session-by-device-id.use-case";
 
 @Controller('auth')
 export class AuthController {
@@ -97,7 +100,7 @@ export class AuthController {
   		throw new UnauthorizedException();
   	}
 		const tokenPayload = await this.commandBus.execute(new GetNewPayloadFromRefreshTokenCommand(refreshToken))
-		const currentDevice = await this.commandBus.execute(new GetSessionByDeviceIdUseCase(tokenPayload.deviceId))
+		const currentDevice = await this.commandBus.execute(new GetSessionByDeviceIdCommand(tokenPayload.deviceId))
 		if (currentDevice) {
 			throw new UnauthorizedException()
 		}
