@@ -17,8 +17,8 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
 		const deviceId = uuidv4();
 		const payload = { email, id, deviceId, login };
 		await this.commandBus.execute(new PutIsLoginFlagCommand(id))
-		const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '10s' });
-		const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '20s' });
+		const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '24h' });
+		const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '24h' });
 		return {
 			accessToken,
 			refreshToken,

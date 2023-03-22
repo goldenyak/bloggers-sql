@@ -19,6 +19,7 @@ import { GetAllSessionsCommand } from "../../auth/use-cases/get-all-sessions.use
 import { GetSessionByDeviceIdCommand } from "../../auth/use-cases/get-session-by-device-id.use-case";
 import { GetAllUserInfoByLoginCommand } from "../../users/use-cases/get-all-user-info-by-login-use.case";
 import { DeleteAllSessionsWithExcludeCommand } from "../use-cases/delete-all-sessions-with-exclude.use-case";
+import { GetAllUserInfoByEmailCommand } from "../../users/use-cases/get-all-user-info-by-email-use.case";
 
 
 @Injectable()
@@ -62,21 +63,18 @@ export class SessionsController {
 	async deleteSessionByDeviceId(@Param('deviceId') deviceId: string, @Req() req: Request) {
 		const refreshToken = req.cookies.refreshToken;
 		const tokenPayload = await this.commandBus.execute(new CheckRefreshTokenCommand(refreshToken))
-		if(!tokenPayload) {
-			throw new UnauthorizedException()
-		}
-		const currentUser = await this.commandBus.execute(new GetAllUserInfoByLoginCommand(tokenPayload.login));
-		const currentSession = await this.commandBus.execute(new GetSessionByDeviceIdCommand(deviceId))
 		if (!refreshToken || !tokenPayload) {
 			throw new UnauthorizedException();
 		}
+		const currentUser = await this.commandBus.execute(new GetAllUserInfoByEmailCommand(tokenPayload.email));
+		const currentSession = await this.commandBus.execute(new GetSessionByDeviceIdCommand(deviceId))
 		if (!currentSession) {
 			throw new NotFoundException();
 		}
-		if (currentSession.userId !== currentUser.id) {
+		if (currentSession.userId !== currentUser.userId) {
 			throw new ForbiddenException();
 		}
-		if (currentSession.userId === currentUser.id) {
+		if (currentSession.userId === currentUser.userId) {
 			return await this.commandBus.execute(new DeleteSessionCommand(deviceId));
 		}
 	}
