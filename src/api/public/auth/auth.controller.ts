@@ -99,15 +99,19 @@ export class AuthController {
   	if (!refreshToken) {
   		throw new UnauthorizedException();
   	}
-		// const tokenPayload = await this.commandBus.execute(new GetNewPayloadFromRefreshTokenCommand(refreshToken))
-		// const tokenLastActiveDate = new Date(tokenPayload.iat*1000).toISOString()
-		// const currentDevice = await this.commandBus.execute(new GetSessionByDeviceIdCommand(tokenPayload.deviceId))
-		// if (currentDevice) {
-		// 	throw new UnauthorizedException()
-		// }
-		// if (currentDevice.lastActiveDate !== tokenLastActiveDate) {
-		// 	throw new UnauthorizedException()
-		// }
+		const result = await this.commandBus.execute(new CheckRefreshTokenCommand(refreshToken));
+		if (!result) {
+			throw new UnauthorizedException();
+		}
+		const tokenPayload = await this.commandBus.execute(new GetNewPayloadFromRefreshTokenCommand(refreshToken))
+		const tokenLastActiveDate = new Date(tokenPayload.iat*1000).toISOString()
+		const currentDevice = await this.commandBus.execute(new GetSessionByDeviceIdCommand(tokenPayload.deviceId))
+		if (currentDevice) {
+			throw new UnauthorizedException()
+		}
+		if (currentDevice.lastActiveDate !== tokenLastActiveDate) {
+			throw new UnauthorizedException()
+		}
 		const tokens = await this.commandBus.execute(new UpdateDevicesCommand(refreshToken))
 		if (!tokens) {
 			throw new UnauthorizedException();
