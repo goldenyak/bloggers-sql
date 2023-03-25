@@ -33,7 +33,7 @@ export class CreateNewBlogUseCase
         new GetAllBlogInfoByIdCommand(newBlogId),
       );
       return {
-        id: blog.id,
+        id: blog.blogId,
         name: blog.name,
         description: blog.description,
         websiteUrl: blog.websiteUrl,
