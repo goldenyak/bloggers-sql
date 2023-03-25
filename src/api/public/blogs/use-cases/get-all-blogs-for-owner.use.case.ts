@@ -22,7 +22,7 @@ export class GetAllBlogsForOwnerUseCase
     const { pageNumber, pageSize, searchNameTerm, sortBy, sortDirection, userId } =
       command;
     // const countBlogs = await this.blogsRepository.countBlogsForOwner(searchNameTerm, userId);
-    const allBlogs = await this.blogsRepository.getAllBlogsForOwner(
+    return  await this.blogsRepository.getAllBlogsForOwner(
       searchNameTerm,
       pageNumber,
       pageSize,

@@ -224,13 +224,16 @@ export class BlogsRepository {
         FROM public."Blogs"
         WHERE ("Blogs"."name" ilike $1 AND "Blogs"."userId" = $2)
         ORDER BY "${sortBy}" ${sortDirection}
-        OFFSET $2 ROWS FETCH NEXT $3 ROWS ONLY
+        OFFSET $3 ROWS FETCH NEXT $4 ROWS ONLY
       `;
 
     const dataResult = await this.dataSource.query(dataQuery, [
       '%' + searchNameTerm + '%',
+      userId,
       (pageNumber - 1) * pageSize,
       pageSize,
+
+
     ]);
     const pages = Math.ceil(countResult[0].count / pageSize);
 
