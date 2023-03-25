@@ -76,7 +76,7 @@ export class BlogsRepository {
   `;
     const dataResult = await this.dataSource.query(dataQuery, [
       '%' + searchNameTerm + '%',
-       pageSize,
+      pageSize,
       (pageNumber - 1) * pageSize,
     ]);
 
@@ -98,7 +98,7 @@ export class BlogsRepository {
         },
       };
     });
-    return mappedBlogs
+    return mappedBlogs;
   }
   // -------------------------------------------------------------------------- //
   async createBlog(
@@ -194,13 +194,20 @@ export class BlogsRepository {
   `;
     const res = await this.dataSource.query(query, [
       '%' + searchNameTerm + '%',
-      userId
+      userId,
     ]);
     const count = Number(res[0].count);
     return count;
   }
   // -------------------------------------------------------------------------- //
-  async getAllBlogsForOwner(searchNameTerm: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: string, userId: string) {
+  async getAllBlogsForOwner(
+    searchNameTerm: string,
+    pageNumber: number,
+    pageSize: number,
+    sortBy: string,
+    sortDirection: string,
+    userId: string,
+  ) {
     const countQuery = `
       SELECT COUNT(*)
       FROM public."Blogs"
@@ -208,7 +215,7 @@ export class BlogsRepository {
   `;
     const countResult = await this.dataSource.query(countQuery, [
       '%' + searchNameTerm + '%',
-      userId
+      userId,
     ]);
 
     const dataQuery = `
@@ -246,7 +253,7 @@ export class BlogsRepository {
   }
   // -------------------------------------------------------------------------- //
   async deleteAll() {
-    await this.dataSource.query(`DELETE FROM public."Blog_ban_info";`);
-    return await this.dataSource.query(`DELETE FROM public."Blogs";`);
+    await this.dataSource.query(`DELETE FROM public."Blogs";`);
+    return await this.dataSource.query(`DELETE FROM public."Blog_ban_info";`);
   }
 }

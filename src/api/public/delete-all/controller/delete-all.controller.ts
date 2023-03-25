@@ -20,12 +20,14 @@ export class DeleteAllController {
 	@HttpCode(204)
 	@Delete('all-data')
 	async deleteAll() {
-		await this.usersRepository.deleteAll();
-		await this.sessionsRepository.deleteAll();
-		await this.blogsRepository.deleteAll();
-		await this.commentsRepository.deleteAll();
-		await this.likesRepository.deleteAll();
-		await this.postsRepository.deleteAll();
+		// await this.usersRepository.deleteAll();
+		// await this.sessionsRepository.deleteAll();
+		// await this.blogsRepository.deleteAll();
+		// await this.commentsRepository.deleteAll();
+		// await this.likesRepository.deleteAll();
+		// await this.postsRepository.deleteAll();
+		await this.usersRepository.nahui();
+
 		return true;
 	}
 }

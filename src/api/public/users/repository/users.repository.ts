@@ -434,5 +434,16 @@ export class UsersRepository {
     };
   }
   // ----------------------------------------------------------------- //
+  async nahui() {
+    await this.dataSource.query(`DELETE FROM public."User_ban_info"`);
+    await this.dataSource.query(`DELETE FROM public."Blog_ban_info"`);
+    await this.dataSource.query(`DELETE FROM public."User_profile"`);
+    await this.dataSource.query(`DELETE FROM public."Users"`);
+    await this.dataSource.query(`DELETE FROM public."Session_info"`);
+    await this.dataSource.query(`DELETE FROM public."Blogs"`);
+    await this.dataSource.query(`DELETE FROM public."Posts"`);
+    await this.dataSource.query(`DELETE FROM public."Likes"`);
+    await this.dataSource.query(`DELETE FROM public."Comments"`);
+  }
 }
 // ----------------------------------------------------------------- //
