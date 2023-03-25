@@ -30,7 +30,6 @@ import { UpdateBanBlogDto } from "../../public/blogs/dto/update-ban-blog.dto";
 import { GetAllBlogInfoByIdCommand } from "../../public/blogs/use-cases/get-all-blog-info-by-id-use.case";
 import { UnBanBlogCommand } from "../../public/blogs/use-cases/unBan-blog.use-case";
 import { BanBlogCommand } from "../../public/blogs/use-cases/ban-blog.use-case";
-import { GetAllBlogsCommand } from "../../public/blogs/use-cases/get-all-blogs-use.case";
 import { GetAllBlogsWithOwnerInfoCommand } from "../../public/blogs/use-cases/get-all-blogs-with-owner-info.use.case";
 
 @Controller('sa')

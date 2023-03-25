@@ -22,16 +22,15 @@ export class CreateNewBlogUseCase
   async execute(command: CreateNewBlogCommand) {
     const { dto, userId, userLogin } = command;
     const createdAt = new Date().toISOString();
-    const newBlog = await this.blogsRepository.createBlog(
+    const newBlogId = await this.blogsRepository.createBlog(
       dto,
       userId,
       userLogin,
       createdAt,
-
     );
-    if (newBlog) {
+    if (newBlogId) {
       const blog = await this.commandBus.execute(
-        new GetAllBlogInfoByIdCommand(newBlog.id),
+        new GetAllBlogInfoByIdCommand(newBlogId),
       );
       return {
         id: blog.id,

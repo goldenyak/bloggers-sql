@@ -115,8 +115,9 @@ export class BlogsRepository {
         )
           INSERT INTO public."Blog_ban_info"("isBanned", "banDate", "userId", "blogId")
           VALUES (false, null, $5, (SELECT id FROM inserted_blog))
+          RETURNING (SELECT * FROM inserted_blog)
     `;
-    const result = await this.dataSource.query(query, [
+    const res = await this.dataSource.query(query, [
       dto.name,
       dto.description,
       dto.websiteUrl,
@@ -124,7 +125,7 @@ export class BlogsRepository {
       userId,
       userLogin,
     ]);
-    return result[0];
+    return res[0].id
   }
   // -------------------------------------------------------------------------- //
   async getAllBlogInfoById(blogId: string) {
