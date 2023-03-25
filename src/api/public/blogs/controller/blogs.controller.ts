@@ -65,7 +65,7 @@ export class BlogsController {
       throw new NotFoundException();
     }
     return {
-      id: blog.id,
+      id: blog.blogId,
       name: blog.name,
       description: blog.description,
       websiteUrl: blog.websiteUrl,
