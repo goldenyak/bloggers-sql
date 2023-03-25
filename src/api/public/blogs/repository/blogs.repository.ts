@@ -67,10 +67,10 @@ export class BlogsRepository {
     sortDirection: any,
   ) {
     const dataQuery = `
-      SELECT *
-      FROM public."Blogs"
-      LEFT JOIN "Blog_ban_info" ON "Blog_ban_info"."userId" = "Blogs"."userId"
-      WHERE ("name" ilike $1 AND "isBanned" = false)
+          SELECT *
+            FROM public."Blogs"
+            LEFT JOIN "Blog_ban_info" ON "Blog_ban_info"."userId" = "Blogs"."userId" AND "Blog_ban_info"."isBanned" = false
+            WHERE ("name" ilike $1)
       ORDER BY "${sortBy}" ${sortDirection}
       OFFSET $3 ROWS FETCH NEXT $2 ROWS ONLY
   `;
@@ -99,6 +99,35 @@ export class BlogsRepository {
       };
     });
     return mappedBlogs;
+  }
+  // -------------------------------------------------------------------------- //
+  async countBlogs(searchNameTerm) {
+    //   const query = `
+    //     SELECT COUNT(*)
+    //     FROM "Blogs"
+    //     LEFT JOIN "Blog_ban_info" ON "Blogs"."userId" = "Blog_ban_info"."userId"
+    //     WHERE ("name" ilike $1 AND "isBanned" = false)
+    // `;
+    //   const res = await this.dataSource.query(query, [
+    //     '%' + searchNameTerm + '%',
+    //   ]);
+    //   const count = Number(res[0].count);
+    //   console.log(count);
+    //   return count;
+    const query = `
+    SELECT COUNT(*)
+    FROM "Blogs"
+    WHERE "name" ilike $1 AND "id" NOT IN (
+      SELECT uuid("blogId")
+      FROM "Blog_ban_info"
+      WHERE "isBanned" = true
+    )
+  `;
+    const res = await this.dataSource.query(query, [
+      '%' + searchNameTerm + '%',
+    ]);
+    const count = Number(res[0].count);
+    return count;
   }
   // -------------------------------------------------------------------------- //
   async createBlog(
@@ -131,6 +160,7 @@ export class BlogsRepository {
   async getAllBlogInfoById(blogId: string) {
     const query = `SELECT *
       FROM "Blogs"
+      LEFT JOIN "Blog_ban_info" ON uuid("Blog_ban_info"."blogId") = "Blogs"."id"
       WHERE "Blogs"."id" = $1;
     `;
     return await this.dataSource.query(query, [blogId]);
@@ -173,19 +203,7 @@ export class BlogsRepository {
     return await this.dataSource.query(query, [id, dto.isBanned, banDate]);
   }
   // -------------------------------------------------------------------------- //
-  async countBlogs(searchNameTerm) {
-    const query = `
-      SELECT COUNT(*)
-      FROM "Blogs"
-      LEFT JOIN "Blog_ban_info" ON "Blogs"."userId" = "Blog_ban_info"."userId"
-      WHERE ("Blogs"."name" ilike $1)
-  `;
-    const res = await this.dataSource.query(query, [
-      '%' + searchNameTerm + '%',
-    ]);
-    const count = Number(res[0].count);
-    return count;
-  }
+
   // -------------------------------------------------------------------------- //
   async countBlogsForOwner(searchNameTerm: string, userId: string) {
     const query = `

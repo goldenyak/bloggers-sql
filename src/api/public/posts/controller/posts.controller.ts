@@ -30,6 +30,7 @@ import { GetAllBlogsCommand } from '../../blogs/use-cases/get-all-blogs-use.case
 import { GetAllPostsCommand } from '../use-cases/get-all-posts-use.case';
 import { CheckRefreshTokenCommand } from '../../auth/use-cases/check-refresh-token.use-case';
 import { GetAllCommentsByPostIdCommand } from '../../comments/use-cases/get-all-comments-by-post-id-use.case';
+import { GetAllBlogInfoByIdCommand } from "../../blogs/use-cases/get-all-blog-info-by-id-use.case";
 
 @Controller('posts')
 export class PostsController {
@@ -57,8 +58,9 @@ export class PostsController {
     const post = await this.commandBus.execute(
       new GetAllPostInfoByIdCommand(id),
     );
-    if (!post) {
-      throw new UnauthorizedException();
+    const blog = await this.commandBus.execute(new GetAllBlogInfoByIdCommand(post.blogId))
+    if (!post || blog.isBanned) {
+      throw new NotFoundException();
     }
     return {
       id: post.id,
