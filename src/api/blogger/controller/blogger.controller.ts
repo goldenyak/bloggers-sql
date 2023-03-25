@@ -210,7 +210,7 @@ export class BloggersController {
       new CreateNewPostCommand(
         dto,
         req.user.id,
-        foundedBlog.id,
+        foundedBlog.blogId,
         foundedBlog.name,
       ),
     );

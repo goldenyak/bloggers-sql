@@ -69,8 +69,8 @@ export class BlogsRepository {
     const dataQuery = `
           SELECT *
             FROM public."Blogs"
-            LEFT JOIN "Blog_ban_info" ON "Blog_ban_info"."userId" = "Blogs"."userId" AND "Blog_ban_info"."isBanned" = false
-            WHERE ("name" ilike $1)
+            JOIN "Blog_ban_info" ON uuid("Blog_ban_info"."blogId") = "Blogs"."id"
+            WHERE ("name" ilike $1 AND "isBanned" = false)
       ORDER BY "${sortBy}" ${sortDirection}
       OFFSET $3 ROWS FETCH NEXT $2 ROWS ONLY
   `;
