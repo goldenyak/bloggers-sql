@@ -11,6 +11,7 @@ export class UsersRepository {
     @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(Users) private readonly userRepo: Repository<Users>,
   ) {}
+  // -------------------------------------------------------------------------- //
   async createUser(
     login: string,
     passwordHash: string,
@@ -42,7 +43,7 @@ export class UsersRepository {
         VALUES (false, null, null, $1)
     `;
     return await this.dataSource.query(banQuery, [res[0].id]);
-    // -------------------------------------------------------------- //
+    // ------------------------------------------------------------------------- //
     // const client = await this.dataSource.getClient()
     //
     // try {
@@ -82,12 +83,6 @@ export class UsersRepository {
   }
   // ----------------------------------------------------------------- //
   async getAllUsers() {
-    // const query = `SELECT *
-    //   FROM "Users"
-    //   LEFT JOIN "User_profile" ON "User_profile"."userId" = "Users"."id"
-    //   LEFT JOIN "User_ban_info" ON "User_ban_info"."userId" = "Users"."id"
-    //   LEFT JOIN "Session_info" ON "Session_info"."userId" = "Users"."id";
-    // `;
     const query = `SELECT *
       FROM "Users"
       LEFT JOIN "User_profile" ON "Users".id = "User_profile"."userId"
@@ -95,6 +90,35 @@ export class UsersRepository {
       LEFT JOIN "Session_info" ON "Users".id = "Session_info"."userId";
     `;
     return await this.dataSource.query(query);
+  }
+  // ----------------------------------------------------------------- //
+  async getAllBannedUsers(
+    searchLoginTerm: string,
+    pageNumber: number,
+    pageSize: number,
+    sortBy: string,
+    sortDirection: string,
+  ) {
+    const query = `SELECT *
+      FROM "Users"
+      LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
+      LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
+      WHERE ("login" ilike $1 AND "isBanned" = true)
+      ORDER BY "${sortBy}" ${sortDirection}
+    `;
+    const res = await this.dataSource.query(query, ['%' + searchLoginTerm + '%']);
+    return res.map((user) => {
+      return {
+        id: user.userId,
+        login: user.login,
+        banInfo: {
+          isBanned: user.isBanned,
+          banDate: user.banDate,
+          banReason: user.banReason,
+        },
+      };
+    });
+
   }
   // ----------------------------------------------------------------- //
   async getAllUserInfoByEmail(email: string) {
@@ -207,7 +231,6 @@ export class UsersRepository {
     userId: string,
     newConfirmationCode: string,
   ) {
-    console.log(newConfirmationCode, userId);
     const query = `
      UPDATE "User_profile" 
      SET "confirmationCode" = $2
@@ -245,7 +268,6 @@ export class UsersRepository {
   }
   // ----------------------------------------------------------------- //
   async banUser(id: string, dto: UpdateBanUserDto, banDate: string) {
-    console.log(id);
     const query = `
      UPDATE "User_ban_info" 
      SET "isBanned" = $2, "banDate" = $4, "banReason" = $3
@@ -293,7 +315,22 @@ export class UsersRepository {
     return await this.dataSource.query(`DELETE FROM public."Users";`);
   }
   // ----------------------------------------------------------------- //
-
+  async countAllBannedUsers(
+    searchLoginTerm: string,
+    sortBy: string,
+    sortDirection: string,
+  ) {
+    const query = `
+      SELECT COUNT(*)
+      FROM "Users"
+      LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
+      LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
+      WHERE ("login" ilike $1 AND "isBanned" = true)
+  `;
+    const res = await this.dataSource.query(query, ['%' + searchLoginTerm + '%']);
+    const count = Number(res[0].count);
+    return count;
+  }
   // ----------------------------------------------------------------- //
   async countAllUsers(
     banStatus: string,
@@ -327,7 +364,6 @@ export class UsersRepository {
     sortDirection,
     banStatus,
   ) {
-    console.log('sortBy', sortBy);
     const countQuery = `
       SELECT COUNT(*)
       FROM public."Users"
@@ -344,7 +380,10 @@ export class UsersRepository {
             ELSE "User_ban_info"."isBanned" IN (true, false)
             END
   `;
-    const countResult = await this.dataSource.query(countQuery, ['%' + searchLoginTerm + '%', '%' + searchEmailTerm + '%']);
+    const countResult = await this.dataSource.query(countQuery, [
+      '%' + searchLoginTerm + '%',
+      '%' + searchEmailTerm + '%',
+    ]);
 
     const dataQuery = `
       SELECT "Users"."id", "Users"."login", "Users"."email",
@@ -371,7 +410,6 @@ export class UsersRepository {
       pageSize,
       (pageNumber - 1) * pageSize,
     ]);
-
     const pages = Math.ceil(countResult[0].count / pageSize);
 
     const mappedUser = dataResult.map((obj) => {
@@ -396,6 +434,5 @@ export class UsersRepository {
     };
   }
   // ----------------------------------------------------------------- //
-
 }
 // ----------------------------------------------------------------- //

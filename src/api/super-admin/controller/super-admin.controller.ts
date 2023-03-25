@@ -24,9 +24,14 @@ import { GetAllUserInfoByIdCommand } from '../../public/users/use-cases/get-all-
 import { UnbanUserCommand } from '../../public/users/use-cases/unban-user.use-case';
 import { BanUserCommand } from '../../public/users/use-cases/ban-user.use-case';
 import { DeleteAllSessionForBanUserCommand } from '../../public/sessions/use-cases/delete-all-session-for-ban-user.use-case';
-import { UsersQueryDto } from '../../public/users/dto/users-query.dto';
 import { GetAllUsersCommand } from '../../public/users/use-cases/get-all-users-use.case';
 import { Pagination } from "../../../../classes/pagination";
+import { UpdateBanBlogDto } from "../../public/blogs/dto/update-ban-blog.dto";
+import { GetAllBlogInfoByIdCommand } from "../../public/blogs/use-cases/get-all-blog-info-by-id-use.case";
+import { UnBanBlogCommand } from "../../public/blogs/use-cases/unBan-blog.use-case";
+import { BanBlogCommand } from "../../public/blogs/use-cases/ban-blog.use-case";
+import { GetAllBlogsCommand } from "../../public/blogs/use-cases/get-all-blogs-use.case";
+import { GetAllBlogsWithOwnerInfoCommand } from "../../public/blogs/use-cases/get-all-blogs-with-owner-info.use.case";
 
 @Controller('sa')
 export class SuperAdminController {
@@ -96,39 +101,43 @@ export class SuperAdminController {
       throw new NotFoundException();
     }
     if (!dto.isBanned) {
-      // await this.commandBus.execute(new UnbanUserLikeStatusCommand(id));
       return await this.commandBus.execute(new UnbanUserCommand(id, dto));
     }
     await this.commandBus.execute(new BanUserCommand(id, dto));
-    // await this.commandBus.execute(new BanUserLikeStatusCommand(id));
     return await this.commandBus.execute(
       new DeleteAllSessionForBanUserCommand(id),
     );
   }
   // -------------------------------------------------------------- //
-  // 	@UseGuards(BasicAuthGuard)
-  // 	@HttpCode(200)
-  // 	@Get('/blogs')
-  // 	async getBlogs(@Query() queryParams: BlogsQueryParams) {
-  // 		const commandOptions = {
-  // 			...queryParams,
-  // 			returnBanned: true
-  // 		}
-  // 		return this.commandBus.execute(new GetAllBlogsCommand(commandOptions));
-  // 	}
+  @HttpCode(200)
+  @Get('/blogs')
+  async getAllBlogs(@Query() query: any) {
+    const { pageNumber, pageSize, searchNameTerm, sortBy, sortDirection } =
+      Pagination.getPaginationDataForBlogs(query);
+
+    return this.commandBus.execute(
+      new GetAllBlogsWithOwnerInfoCommand(
+        pageNumber,
+        pageSize,
+        searchNameTerm,
+        sortBy,
+        sortDirection,
+      ),
+    );
+  }
   // -------------------------------------------------------------- //
-  // 	@UseGuards(BasicAuthGuard)
-  // 	@HttpCode(204)
-  // 	@Put('/blogs/:id/ban')
-  // 	async updateBanBlog(@Param('id') id: string, @Body() dto: UpdateBanBlogDto) {
-  // 		const foundedBlog = await this.commandBus.execute(new GetBlogByIdWithOwnerInfoCommand(id));
-  // 		if (!foundedBlog) {
-  // 			throw new NotFoundException();
-  // 		}
-  // 		if (!dto.isBanned) {
-  // 			return await this.commandBus.execute(new UnBanBlogCommand(id, dto));
-  // 		}
-  // 		await this.commandBus.execute(new BanBlogCommand(id, dto));
-  // 	}
+  	@UseGuards(BasicAuthGuard)
+  	@HttpCode(204)
+  	@Put('/blogs/:id/ban')
+  	async updateBanBlog(@Param('id') id: string, @Body() dto: UpdateBanBlogDto) {
+  		const foundedBlog = await this.commandBus.execute(new GetAllBlogInfoByIdCommand(id));
+  		if (!foundedBlog) {
+  			throw new NotFoundException();
+  		}
+  		if (!dto.isBanned) {
+  			return await this.commandBus.execute(new UnBanBlogCommand(id, dto));
+  		}
+  		await this.commandBus.execute(new BanBlogCommand(id, dto));
+  	}
   // -------------------------------------------------------------- //
 }

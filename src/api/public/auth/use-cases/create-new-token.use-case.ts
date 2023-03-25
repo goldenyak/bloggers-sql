@@ -19,11 +19,11 @@ export class CreateNewTokenUseCase
     const { email, deviceId, id } = command;
     const newAccessToken = await this.JwtService.signAsync(
       { email, id },
-      { expiresIn: '10s' },
+      { expiresIn: '48h' },
     );
     const newRefreshToken = await this.JwtService.signAsync(
       { email, id, deviceId },
-      { expiresIn: '10s' },
+      { expiresIn: '48h' },
     );
     return {
       newAccessToken,
