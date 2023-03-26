@@ -113,6 +113,7 @@ export class BloggersController {
         searchLoginTerm,
         sortBy,
         sortDirection,
+        user.userId
       ),
     );
   }

@@ -98,15 +98,23 @@ export class UsersRepository {
     pageSize: number,
     sortBy: string,
     sortDirection: string,
+    userId: string,
   ) {
     const query = `SELECT *
       FROM "Users"
       LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
       LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
-      WHERE ("login" ilike $1 AND "isBanned" = true)
-      ORDER BY "${sortBy}" ${sortDirection}
+      LEFT JOIN "Blogs" ON "Users"."id" = uuid("Blogs"."userId")
+      WHERE ("login" ilike $1 AND "isBanned" = true AND "Blogs"."userId" = $2 )
+      ORDER BY "Users"."${sortBy}" ${sortDirection}
+      OFFSET $4 ROWS FETCH NEXT $3 ROWS ONLY
     `;
-    const res = await this.dataSource.query(query, ['%' + searchLoginTerm + '%']);
+    const res = await this.dataSource.query(query, [
+      '%' + searchLoginTerm + '%',
+      userId,
+      pageSize,
+      (pageNumber - 1) * pageSize,
+    ]);
     return res.map((user) => {
       return {
         id: user.userId,
@@ -118,7 +126,6 @@ export class UsersRepository {
         },
       };
     });
-
   }
   // ----------------------------------------------------------------- //
   async getAllUserInfoByEmail(email: string) {
@@ -319,15 +326,20 @@ export class UsersRepository {
     searchLoginTerm: string,
     sortBy: string,
     sortDirection: string,
+    userId: string,
   ) {
     const query = `
       SELECT COUNT(*)
       FROM "Users"
       LEFT JOIN "User_profile" ON "Users"."id" = "User_profile"."userId"
       LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
-      WHERE ("login" ilike $1 AND "isBanned" = true)
+      LEFT JOIN "Blogs" ON "Users"."id" = uuid("Blogs"."userId")
+      WHERE ("login" ilike $1 AND "isBanned" = true AND "Blogs"."userId" = $2 )
   `;
-    const res = await this.dataSource.query(query, ['%' + searchLoginTerm + '%']);
+    const res = await this.dataSource.query(query, [
+      '%' + searchLoginTerm + '%',
+      userId,
+    ]);
     const count = Number(res[0].count);
     return count;
   }

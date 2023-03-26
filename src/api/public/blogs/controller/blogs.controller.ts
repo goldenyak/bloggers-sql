@@ -61,7 +61,7 @@ export class BlogsController {
     const blog = await this.commandBus.execute(
       new GetAllBlogInfoByIdCommand(id),
     );
-    if (!blog) {
+    if (!blog || blog.isBanned) {
       throw new NotFoundException();
     }
     return {

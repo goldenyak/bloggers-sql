@@ -8,6 +8,7 @@ export class GetAllBannedUsersCommand {
     public searchLoginTerm: string,
     public sortBy: string,
     public sortDirection: string,
+    public userId: string
   ) {}
 }
 
@@ -18,12 +19,13 @@ export class GetAllBannedUsersUseCase
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async execute(command: GetAllBannedUsersCommand) {
-    const { pageNumber, pageSize, sortBy, sortDirection, searchLoginTerm } =
+    const { pageNumber, pageSize, sortBy, sortDirection, searchLoginTerm, userId } =
       command;
     const countBannedUsers = await this.usersRepository.countAllBannedUsers(
       searchLoginTerm,
       sortBy,
       sortDirection,
+      userId
     );
     const allBannedUsers = await this.usersRepository.getAllBannedUsers(
       searchLoginTerm,
@@ -31,6 +33,7 @@ export class GetAllBannedUsersUseCase
       pageSize,
       sortBy,
       sortDirection,
+      userId
     );
     return {
       pagesCount: Math.ceil(countBannedUsers / pageSize),
