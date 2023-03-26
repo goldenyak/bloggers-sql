@@ -40,6 +40,8 @@ import { GetAllUserInfoByIdCommand } from '../../public/users/use-cases/get-all-
 import { GetAllBlogsForOwnerCommand } from '../../public/blogs/use-cases/get-all-blogs-for-owner.use.case';
 import { Pagination } from '../../../../classes/pagination';
 import { GetAllBannedUsersCommand } from '../../public/users/use-cases/get-all-banned-users.use-case';
+import { User } from "../../../decorators/user.decorator";
+
 
 @Controller('blogger')
 export class BloggersController {
@@ -100,6 +102,7 @@ export class BloggersController {
     const blog = await this.commandBus.execute(
       new GetAllBlogInfoByIdCommand(id),
     );
+    console.log(blog);
     if (!blog) {
       throw new NotFoundException();
     }
@@ -178,16 +181,16 @@ export class BloggersController {
     if (!foundedUser) {
       throw new NotFoundException();
     }
-    if (!dto.isBanned) {
-      await this.commandBus.execute(new UnbanUserLikeStatusCommand(id));
+    if (dto.isBanned) {
+      await this.commandBus.execute(new BanUserForBlogCommand(id, dto));
+      await this.commandBus.execute(new BanUserLikeStatusCommand(id));
       return await this.commandBus.execute(
-        new UnBanUserForBlogCommand(id, dto),
+        new DeleteAllSessionForBanUserCommand(id),
       );
     }
-    await this.commandBus.execute(new BanUserForBlogCommand(id, dto));
-    await this.commandBus.execute(new BanUserLikeStatusCommand(id));
+    await this.commandBus.execute(new UnbanUserLikeStatusCommand(id));
     return await this.commandBus.execute(
-      new DeleteAllSessionForBanUserCommand(id),
+      new UnBanUserForBlogCommand(id, dto),
     );
   }
   // -------------------------------------------------------------------------- //
@@ -223,7 +226,7 @@ export class BloggersController {
   async deletePostForSpecifiedBlog(
     @Param('blogId') blogId: string,
     @Param('postId') postId: string,
-    @Req() req,
+    @User() user
   ) {
     const foundedBlog = await this.commandBus.execute(
       new GetAllBlogInfoByIdCommand(blogId),
@@ -231,7 +234,7 @@ export class BloggersController {
     if (!foundedBlog) {
       throw new NotFoundException();
     }
-    if (foundedBlog.userId !== req.user.id) {
+    if (foundedBlog.userId !== user.id) {
       throw new ForbiddenException();
     }
     const foundedPost = await this.commandBus.execute(

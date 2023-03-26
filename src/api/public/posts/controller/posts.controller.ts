@@ -58,8 +58,11 @@ export class PostsController {
     const post = await this.commandBus.execute(
       new GetAllPostInfoByIdCommand(id),
     );
+    if (!post) {
+      throw new NotFoundException();
+    }
     const blog = await this.commandBus.execute(new GetAllBlogInfoByIdCommand(post.blogId))
-    if (!post || blog.isBanned) {
+    if (blog.isBanned) {
       throw new NotFoundException();
     }
     return {
