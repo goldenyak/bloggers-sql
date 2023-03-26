@@ -106,7 +106,7 @@ export class UsersRepository {
       LEFT JOIN "User_ban_info" ON "Users"."id" = "User_ban_info"."userId"
       LEFT JOIN "Blogs" ON "Users"."id" = uuid("Blogs"."userId")
       WHERE ("login" ilike $1 AND "isBanned" = true AND "Blogs"."userId" = $2 )
-      ORDER BY "Users"."${sortBy}" ${sortDirection}
+      ORDER BY "User_profile"."${sortBy}" ${sortDirection}
       OFFSET $4 ROWS FETCH NEXT $3 ROWS ONLY
     `;
     const res = await this.dataSource.query(query, [
