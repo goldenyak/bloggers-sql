@@ -19,7 +19,8 @@ export class BlogsRepository {
     const countQuery = `
       SELECT COUNT(*)
       FROM public."Blogs"
-      WHERE ("Blogs"."name" ilike $1)
+      JOIN "Blog_ban_info" ON uuid("Blog_ban_info"."blogId") = "Blogs"."id"
+            WHERE ("name" ilike $1 AND "isBanned" = false)
   `;
     const countResult = await this.dataSource.query(countQuery, [
       '%' + searchNameTerm + '%',
@@ -28,7 +29,8 @@ export class BlogsRepository {
     const dataQuery = `
       SELECT *
         FROM public."Blogs"
-        WHERE ("Blogs"."name" ilike $1)
+         JOIN "Blog_ban_info" ON uuid("Blog_ban_info"."blogId") = "Blogs"."id"
+            WHERE ("name" ilike $1 AND "isBanned" = false)
         ORDER BY "${sortBy}" ${sortDirection}
         OFFSET $2 ROWS FETCH NEXT $3 ROWS ONLY
       `;
@@ -42,7 +44,7 @@ export class BlogsRepository {
 
     const mappedBlogs = dataResult.map((obj) => {
       return {
-        id: obj.id,
+        id: obj.blogId,
         name: obj.name,
         description: obj.description,
         websiteUrl: obj.websiteUrl,
@@ -230,6 +232,7 @@ export class BlogsRepository {
     const countQuery = `
       SELECT COUNT(*)
       FROM public."Blogs"
+      LEFT JOIN "Blog_ban_info" ON uuid("Blog_ban_info"."blogId") = "Blogs"."id"
       WHERE ("Blogs"."name" ilike $1 AND "Blogs"."userId" = $2)
   `;
     const countResult = await this.dataSource.query(countQuery, [
@@ -240,6 +243,7 @@ export class BlogsRepository {
     const dataQuery = `
       SELECT *
         FROM public."Blogs"
+        LEFT JOIN "Blog_ban_info" ON uuid("Blog_ban_info"."blogId") = "Blogs"."id"
         WHERE ("Blogs"."name" ilike $1 AND "Blogs"."userId" = $2)
         ORDER BY "${sortBy}" ${sortDirection}
         OFFSET $3 ROWS FETCH NEXT $4 ROWS ONLY
@@ -250,14 +254,12 @@ export class BlogsRepository {
       userId,
       (pageNumber - 1) * pageSize,
       pageSize,
-
-
     ]);
     const pages = Math.ceil(countResult[0].count / pageSize);
 
     const mappedBlogs = dataResult.map((obj) => {
       return {
-        id: obj.id,
+        id: obj.blogId,
         name: obj.name,
         description: obj.description,
         websiteUrl: obj.websiteUrl,
