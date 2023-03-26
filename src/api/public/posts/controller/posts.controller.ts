@@ -61,7 +61,9 @@ export class PostsController {
     if (!post) {
       throw new NotFoundException();
     }
+    console.log(post, 'post in public post controller => get post by id');
     const blog = await this.commandBus.execute(new GetAllBlogInfoByIdCommand(post.blogId))
+    console.log(blog, 'blog in public post controller => get post by id');
     if (blog.isBanned) {
       throw new NotFoundException();
     }
