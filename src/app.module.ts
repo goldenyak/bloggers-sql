@@ -90,6 +90,7 @@ import { GetLikesInfoForCommentUseCase } from "./api/public/likes/use-cases/get-
 import { GetAllBlogsWithOwnerInfoUseCase } from "./api/public/blogs/use-cases/get-all-blogs-with-owner-info.use.case";
 import { GetAllBlogsForOwnerUseCase } from "./api/public/blogs/use-cases/get-all-blogs-for-owner.use.case";
 import { GetAllBannedUsersUseCase } from "./api/public/users/use-cases/get-all-banned-users.use-case";
+import { Black_list_blogs } from "./entities/blog/black-list-blogs.entity";
 
 const controllers = [
   SuperAdminController,
@@ -222,6 +223,7 @@ const likesUseCases = [
         UserProfile,
         UserBanInfo,
         BlogBanInfo,
+        Black_list_blogs,
         SessionInfo,
       ],
       synchronize: true,
@@ -243,6 +245,7 @@ const likesUseCases = [
     //     UserProfile,
     //     UserBanInfo,
     //     BlogBanInfo,
+    //     Black_list_blogs,
     //     SessionInfo,
     //   ],
     //   synchronize: true,

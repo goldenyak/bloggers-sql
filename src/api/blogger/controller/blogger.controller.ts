@@ -40,8 +40,7 @@ import { GetAllUserInfoByIdCommand } from '../../public/users/use-cases/get-all-
 import { GetAllBlogsForOwnerCommand } from '../../public/blogs/use-cases/get-all-blogs-for-owner.use.case';
 import { Pagination } from '../../../../classes/pagination';
 import { GetAllBannedUsersCommand } from '../../public/users/use-cases/get-all-banned-users.use-case';
-import { User } from "../../../decorators/user.decorator";
-
+import { User } from '../../../decorators/user.decorator';
 
 @Controller('blogger')
 export class BloggersController {
@@ -99,14 +98,16 @@ export class BloggersController {
     const user = await this.commandBus.execute(
       new GetAllUserInfoByIdCommand(req.user.id),
     );
+    if (!user) {
+      throw new NotFoundException();
+    }
     const blog = await this.commandBus.execute(
       new GetAllBlogInfoByIdCommand(id),
     );
-    console.log(blog);
     if (!blog) {
       throw new NotFoundException();
     }
-    if (user.userId !== blog.userId || !user) {
+    if (user.userId !== blog.userId) {
       throw new ForbiddenException();
     }
     return await this.commandBus.execute(
@@ -116,7 +117,7 @@ export class BloggersController {
         searchLoginTerm,
         sortBy,
         sortDirection,
-        user.userId
+        id,
       ),
     );
   }
@@ -176,22 +177,21 @@ export class BloggersController {
       throw new ForbiddenException();
     }
     const foundedUser = await this.commandBus.execute(
-      new FindUserByIdCommand(id),
+      new GetAllUserInfoByIdCommand(id),
     );
     if (!foundedUser) {
       throw new NotFoundException();
     }
-    if (dto.isBanned) {
-      await this.commandBus.execute(new BanUserForBlogCommand(id, dto));
-      await this.commandBus.execute(new BanUserLikeStatusCommand(id));
+    if (!dto.isBanned) {
+      // await this.commandBus.execute(new UnbanUserLikeStatusCommand(id));
       return await this.commandBus.execute(
-        new DeleteAllSessionForBanUserCommand(id),
+        new UnBanUserForBlogCommand(id, dto.blogId,),
       );
     }
-    await this.commandBus.execute(new UnbanUserLikeStatusCommand(id));
-    return await this.commandBus.execute(
-      new UnBanUserForBlogCommand(id, dto),
+    await this.commandBus.execute(
+      new BanUserForBlogCommand(req.user.id, foundedUser.userId, foundedUser.login, dto.blogId, dto),
     );
+    // await this.commandBus.execute(new BanUserLikeStatusCommand(id));
   }
   // -------------------------------------------------------------------------- //
   @UseGuards(JwtAuthGuard)
@@ -226,7 +226,7 @@ export class BloggersController {
   async deletePostForSpecifiedBlog(
     @Param('blogId') blogId: string,
     @Param('postId') postId: string,
-    @User() user
+    @User() user,
   ) {
     const foundedBlog = await this.commandBus.execute(
       new GetAllBlogInfoByIdCommand(blogId),

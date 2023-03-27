@@ -3,6 +3,7 @@ import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Users } from '../../../../entities/user/users.entity';
 import { UpdateBanUserDto } from '../dto/update-ban-user.dto';
+import { UpdateBanUserForBlogDto } from "../../blogs/dto/update-ban-user-for-blog.dto";
 const { Client } = require('pg');
 
 @Injectable()
@@ -44,52 +45,6 @@ export class UsersRepository {
     `;
     return await this.dataSource.query(banQuery, [res[0].id]);
     // ------------------------------------------------------------------------- //
-    // const client = await this.dataSource.getClient()
-    //
-    // try {
-    //   await client.query('BEGIN');
-    //
-    //   const insertUserResult = await client.query(
-    //     `INSERT INTO public."Users"("login", "email")
-    //  VALUES ($1, $2)
-    //  RETURNING id`,
-    //     [login, email]
-    //   );
-    //
-    //   const userId = insertUserResult.rows[0].id;
-    //
-    //   await client.query(
-    //     `INSERT INTO public."User_profile"("userId", "password", "createdAt", "confirmationCode", "isConfirm")
-    //  VALUES ($1, $2, NOW(), $3, false)`,
-    //     [userId, passwordHash, confirmationCode]
-    //   );
-    //
-    //   await client.query(
-    //     `INSERT INTO public."User_ban_info"("isBanned", "banDate", "banReason", "userId")
-    //  VALUES (false, null, null, $1)`,
-    //     [userId]
-    //   );
-    //
-    //   await client.query('COMMIT');
-    //
-    //   return 'Success';
-    // } catch (error) {
-    //   await client.query('ROLLBACK');
-    //   throw error;
-    // } finally {
-    //   client.release();
-    // }
-    // ----------------------------------------------------------------- //
-  }
-  // ----------------------------------------------------------------- //
-  async getAllUsers() {
-    const query = `SELECT *
-      FROM "Users"
-      LEFT JOIN "User_profile" ON "Users".id = "User_profile"."userId"
-      LEFT JOIN "User_ban_info" ON "Users".id = "User_ban_info"."userId"
-      LEFT JOIN "Session_info" ON "Users".id = "Session_info"."userId";
-    `;
-    return await this.dataSource.query(query);
   }
   // ----------------------------------------------------------------- //
   async getAllBannedUsers(
@@ -128,6 +83,39 @@ export class UsersRepository {
     });
   }
   // ----------------------------------------------------------------- //
+  async getAllBannedUsersForBlog(
+    searchLoginTerm: string,
+    pageNumber: number,
+    pageSize: number,
+    sortBy: string,
+    sortDirection: string,
+    blogId: string,
+  ) {
+    const query = `SELECT *
+      FROM "Black_list_blogs"
+      WHERE ("bannedUserLogin" ilike $1 AND "blogId" = $2 )
+      ORDER BY "${sortBy}" ${sortDirection}
+      OFFSET $4 ROWS FETCH NEXT $3 ROWS ONLY
+    `;
+    const res = await this.dataSource.query(query, [
+      '%' + searchLoginTerm + '%',
+      blogId,
+      pageSize,
+      (pageNumber - 1) * pageSize,
+    ]);
+    return res.map((el) => {
+      return {
+        id: el.bannedUserId,
+        login: el.bannedUserLogin,
+        banInfo: {
+          isBanned: true,
+          banDate: el.banDate,
+          banReason: "reason",
+        },
+      };
+    });
+  }
+  // ----------------------------------------------------------------- //
   async getAllUserInfoByEmail(email: string) {
     const query = `SELECT *
       FROM "Users"
@@ -157,19 +145,6 @@ export class UsersRepository {
     `;
     return await this.dataSource.query(query, [login]);
   }
-
-  // ----------------------------------------------------------------- //
-  // async createUser(
-  //   login: string,
-  //   passwordHash: string,
-  //   email: string,
-  //   confirmationCode: string,
-  // ) {
-  //   const user = new Users();
-  //   user.email = email;
-  //   user.login = login;
-  //   return this.userRepo.save(user);
-  // }
   // ----------------------------------------------------------------- //
   async findUserByLogin(login: string) {
     return await this.dataSource.query(
@@ -297,6 +272,22 @@ export class UsersRepository {
     return await this.dataSource.query(query, [id, dto.isBanned]);
   }
   // ----------------------------------------------------------------- //
+  async banUserForBlog(ownerId: string, bannedUserId: string, bannedUserLogin: string,  blogId: string, banDate: string) {
+    const banQuery = `
+        INSERT INTO public."Black_list_blogs"("ownerId", "bannedUserId", "bannedUserLogin", "blogId",  "createdAt" )
+        VALUES ($1, $2, $3, $4, $5)
+    `;
+    return await this.dataSource.query(banQuery, [ownerId, bannedUserId, bannedUserLogin, blogId, banDate ]);
+  }
+  // ----------------------------------------------------------------- //
+  async unbanUserForBlog( bannedUserId: string, blogId: string,) {
+    const query = `
+        DELETE FROM "Black_list_blogs" 
+        WHERE ("bannedUserId" = $1 AND "blogId" = $2)
+    `;
+    return await this.dataSource.query(query, [bannedUserId, blogId]);
+  }
+  // ----------------------------------------------------------------- //
   async putIsLoginFlag(userId: string) {
     const query = `
      UPDATE "Users" 
@@ -339,6 +330,25 @@ export class UsersRepository {
     const res = await this.dataSource.query(query, [
       '%' + searchLoginTerm + '%',
       userId,
+    ]);
+    const count = Number(res[0].count);
+    return count;
+  }
+  // ----------------------------------------------------------------- //
+  async countAllBannedUsersForBlog(
+    searchLoginTerm: string,
+    sortBy: string,
+    sortDirection: string,
+    blogId: string,
+  ) {
+    const query = `
+      SELECT COUNT(*)
+      FROM "Black_list_blogs"
+      WHERE ("bannedUserLogin" ilike $1 AND "blogId" = $2 )
+  `;
+    const res = await this.dataSource.query(query, [
+      '%' + searchLoginTerm + '%',
+      blogId,
     ]);
     const count = Number(res[0].count);
     return count;
