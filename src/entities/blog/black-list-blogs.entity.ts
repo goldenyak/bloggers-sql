@@ -19,4 +19,7 @@ export class Black_list_blogs {
 
   @Column({nullable: true})
   bannedUserLogin: string
+
+  @Column({nullable: true})
+  banReason: string
 }

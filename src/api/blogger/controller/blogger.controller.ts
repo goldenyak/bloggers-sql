@@ -189,7 +189,7 @@ export class BloggersController {
       );
     }
     await this.commandBus.execute(
-      new BanUserForBlogCommand(req.user.id, foundedUser.userId, foundedUser.login, dto.blogId, dto),
+      new BanUserForBlogCommand(req.user.id, foundedUser.userId, foundedUser.login, dto.blogId, dto.banReason),
     );
     // await this.commandBus.execute(new BanUserLikeStatusCommand(id));
   }

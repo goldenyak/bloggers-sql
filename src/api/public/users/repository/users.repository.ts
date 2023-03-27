@@ -110,7 +110,7 @@ export class UsersRepository {
         banInfo: {
           isBanned: true,
           banDate: el.banDate,
-          banReason: "reason reason reasonreasonreason reason",
+          banReason: el.banReason,
         },
       };
     });
@@ -272,12 +272,12 @@ export class UsersRepository {
     return await this.dataSource.query(query, [id, dto.isBanned]);
   }
   // ----------------------------------------------------------------- //
-  async banUserForBlog(ownerId: string, bannedUserId: string, bannedUserLogin: string,  blogId: string, banDate: string) {
+  async banUserForBlog(ownerId: string, bannedUserId: string, bannedUserLogin: string,  blogId: string, banDate: string, banReason: string) {
     const banQuery = `
-        INSERT INTO public."Black_list_blogs"("ownerId", "bannedUserId", "bannedUserLogin", "blogId",  "createdAt" )
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO public."Black_list_blogs"("ownerId", "bannedUserId", "bannedUserLogin", "blogId",  "createdAt", "banReason" )
+        VALUES ($1, $2, $3, $4, $5, $6)
     `;
-    return await this.dataSource.query(banQuery, [ownerId, bannedUserId, bannedUserLogin, blogId, banDate ]);
+    return await this.dataSource.query(banQuery, [ownerId, bannedUserId, bannedUserLogin, blogId, banDate, banReason ]);
   }
   // ----------------------------------------------------------------- //
   async unbanUserForBlog( bannedUserId: string, blogId: string,) {

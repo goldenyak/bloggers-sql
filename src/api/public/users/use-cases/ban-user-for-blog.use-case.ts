@@ -3,7 +3,7 @@ import { UpdateBanUserForBlogDto } from "../../blogs/dto/update-ban-user-for-blo
 import { UsersRepository } from "../repository/users.repository";
 
 export class BanUserForBlogCommand {
-  constructor(public ownerId: string, public bannedUserId: string, public bannedUserLogin: string, public blogId: string, public dto: UpdateBanUserForBlogDto, ) {}
+  constructor(public ownerId: string, public bannedUserId: string, public bannedUserLogin: string, public blogId: string, public banReason: string, ) {}
 }
 
 @CommandHandler(BanUserForBlogCommand)
@@ -13,8 +13,8 @@ export class BanUserForBlogUseCase implements ICommandHandler<BanUserForBlogComm
   ) {}
 
   async execute(command: BanUserForBlogCommand) {
-    const { ownerId, bannedUserId, bannedUserLogin, blogId, dto} = command;
+    const { ownerId, bannedUserId, bannedUserLogin, blogId, banReason} = command;
     const banDate = new Date().toISOString()
-    return await this.usersRepository.banUserForBlog(ownerId, bannedUserId, bannedUserLogin, blogId, banDate);
+    return await this.usersRepository.banUserForBlog(ownerId, bannedUserId, bannedUserLogin, blogId, banDate, banReason);
   }
 }
