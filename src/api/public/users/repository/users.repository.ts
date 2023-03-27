@@ -90,6 +90,7 @@ export class UsersRepository {
     sortBy: string,
     sortDirection: string,
     blogId: string,
+    prostoId: string
   ) {
     const query = `
         SELECT *
