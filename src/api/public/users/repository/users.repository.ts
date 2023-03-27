@@ -90,8 +90,10 @@ export class UsersRepository {
     sortBy: string,
     sortDirection: string,
     blogId: string,
-    prostoId: string
   ) {
+    if (sortBy === 'login') {
+       sortBy = "bannedUserLogin"
+    }
     const query = `
         SELECT *
           FROM "Black_list_blogs"
