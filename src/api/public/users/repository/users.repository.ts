@@ -91,11 +91,12 @@ export class UsersRepository {
     sortDirection: string,
     blogId: string,
   ) {
-    const query = `SELECT *
-      FROM "Black_list_blogs"
-      WHERE ("bannedUserLogin" ilike $1 AND "blogId" = $2 )
-      ORDER BY "${sortBy}" ${sortDirection}
-      OFFSET $4 ROWS FETCH NEXT $3 ROWS ONLY
+    const query = `
+        SELECT *
+          FROM "Black_list_blogs"
+          WHERE ("bannedUserLogin" ilike $1 AND "blogId" = $2 )
+          ORDER BY "${sortBy}" ${sortDirection}
+          OFFSET $4 ROWS FETCH NEXT $3 ROWS ONLY
     `;
     const res = await this.dataSource.query(query, [
       '%' + searchLoginTerm + '%',
