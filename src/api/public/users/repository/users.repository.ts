@@ -109,7 +109,7 @@ export class UsersRepository {
         login: el.bannedUserLogin,
         banInfo: {
           isBanned: true,
-          banDate: el.banDate,
+          banDate: el.createdAt,
           banReason: el.banReason,
         },
       };
