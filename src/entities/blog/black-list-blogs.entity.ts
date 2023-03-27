@@ -17,7 +17,7 @@ export class Black_list_blogs {
   @Column()
   bannedUserId: string
 
-  @Column({nullable: true})
+  @Column({nullable: true, collation: 'C'})
   bannedUserLogin: string
 
   @Column({nullable: true})
