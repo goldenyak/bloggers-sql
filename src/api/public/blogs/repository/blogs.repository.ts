@@ -72,7 +72,7 @@ export class BlogsRepository {
           SELECT *
             FROM public."Blogs"
             JOIN "Blog_ban_info" ON uuid("Blog_ban_info"."blogId") = "Blogs"."id"
-            WHERE ("name" ilike $1 AND "isBanned" = false)
+            WHERE ("name" ilike $1)
       ORDER BY "${sortBy}" ${sortDirection}
       OFFSET $3 ROWS FETCH NEXT $2 ROWS ONLY
   `;
@@ -130,6 +130,7 @@ export class BlogsRepository {
     ]);
     const count = Number(res[0].count);
     return count;
+
   }
   // -------------------------------------------------------------------------- //
   async createBlog(

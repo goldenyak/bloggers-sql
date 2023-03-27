@@ -110,7 +110,7 @@ export class UsersRepository {
         banInfo: {
           isBanned: true,
           banDate: el.banDate,
-          banReason: "reason",
+          banReason: "reason reason reasonreasonreason reason",
         },
       };
     });
